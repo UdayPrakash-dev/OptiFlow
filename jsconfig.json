@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "target": "ES2022",
+    "checkJs": false,
+    "allowSyntheticDefaultImports": true,
+    "baseUrl": ".",
+    "paths": {
+      "#config/*": ["./src/config/*"],
+      "#platform/*": ["./src/platform/*"],
+      "#modules/*": ["./src/modules/*"],
+      "#shared/*": ["./src/shared/*"]
+    }
+  },
+  "include": ["src/**/*", "tests/**/*", "prisma/**/*"]
+}
