@@ -1,6 +1,7 @@
 import { AsyncLocalStorage } from 'node:async_hooks';
 
-const asyncLocalStorage = new AsyncLocalStorage();
+export const asyncLocalStorage = new AsyncLocalStorage();
+export const requestContextStorage = asyncLocalStorage;
 
 /**
  * Runs a callback within an async request context.
@@ -21,6 +22,7 @@ export function runWithContext(context, callback) {
 export function getContext() {
   return asyncLocalStorage.getStore();
 }
+export const getRequestContext = getContext;
 
 /**
  * Returns the current request ID, or a fallback string if unavailable.
@@ -41,6 +43,7 @@ export function getTenantId() {
   const store = getContext();
   return store?.companyId;
 }
+export const getCompanyId = getTenantId;
 
 /**
  * Returns the current authenticated actor from context.
