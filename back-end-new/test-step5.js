@@ -10,7 +10,14 @@ import { requireRoles } from './src/middleware/authorize.js';
 import { errorHandler } from './src/middleware/errorHandler.js';
 import authRoutes from './src/routes/auth.routes.js';
 import usersRoutes from './src/routes/users.routes.js';
-import orgRoutes from './src/routes/org.routes.js';
+import rolesRoutes from './src/routes/roles.routes.js';
+import branchesRoutes from './src/routes/branches.routes.js';
+import teamsRoutes from './src/routes/teams.routes.js';
+import auditLogsRoutes from './src/routes/audit-logs.routes.js';
+import permissionsRoutes from './src/routes/permissions.routes.js';
+import roleTemplatesRoutes from './src/routes/role-templates.routes.js';
+import roleAssignmentsRoutes from './src/routes/role-assignments.routes.js';
+import bootstrapRoutes from './src/routes/bootstrap.routes.js';
 import { ROLES } from './src/utils/roles.js';
 
 let passed = 0;
@@ -44,7 +51,14 @@ function createTestApp() {
   app.use(express.json());
   app.use(authRoutes);
   app.use(usersRoutes);
-  app.use(orgRoutes);
+  app.use(rolesRoutes);
+app.use(branchesRoutes);
+app.use(teamsRoutes);
+app.use(auditLogsRoutes);
+app.use(permissionsRoutes);
+app.use(roleTemplatesRoutes);
+app.use(roleAssignmentsRoutes);
+app.use(bootstrapRoutes);
   app.use(errorHandler);
   return app;
 }

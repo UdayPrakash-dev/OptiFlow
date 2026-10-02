@@ -6,7 +6,9 @@ import { env } from './src/config/env.js';
 import { prisma } from './src/config/prisma.js';
 import { errorHandler } from './src/middleware/errorHandler.js';
 import notificationsRoutes from './src/routes/notifications.routes.js';
-import complianceRoutes from './src/routes/compliance.routes.js';
+import complianceRulesRoutes from './src/routes/compliance-rules.routes.js';
+import complianceViolationsRoutes from './src/routes/compliance-violations.routes.js';
+import complianceEvidenceRoutes from './src/routes/compliance-evidence.routes.js';
 import { ROLES } from './src/utils/roles.js';
 
 let passed = 0;
@@ -27,7 +29,9 @@ function createTestApp() {
   const app = express();
   app.use(express.json());
   app.use(notificationsRoutes);
-  app.use(complianceRoutes);
+  app.use(complianceRulesRoutes);
+app.use(complianceViolationsRoutes);
+app.use(complianceEvidenceRoutes);
   app.use(errorHandler);
   return app;
 }

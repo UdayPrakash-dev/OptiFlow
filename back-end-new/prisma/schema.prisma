@@ -15,9 +15,9 @@ datasource db {
 // ---------------------------------------------------------------------------
 
 model Plan {
-  id                        String   @id @default(uuid())
+  id                        String  @id @default(uuid())
   name                      String
-  maxBranches               Int?     // null = unlimited
+  maxBranches               Int? // null = unlimited
   maxUsers                  Int?
   maxActiveProcessTemplates Int?
   maxComplianceRules        Int?
@@ -25,6 +25,8 @@ model Plan {
   allowsIntegrations        Boolean
 
   subscriptions Subscription[]
+
+  updatedAt DateTime @updatedAt
 
   @@map("plans")
 }
@@ -39,6 +41,8 @@ model Subscription {
   status             SubscriptionStatus @default(Active)
   currentPeriodStart DateTime           @default(now())
   currentPeriodEnd   DateTime
+
+  updatedAt DateTime @updatedAt
 
   @@index([companyId])
   @@index([planId])
@@ -58,12 +62,12 @@ enum SubscriptionStatus {
 }
 
 model PlatformAdminUser {
-  id           String   @id @default(uuid())
-  email        String   @unique
+  id           String    @id @default(uuid())
+  email        String    @unique
   passwordHash String
   fullName     String
-  isActive     Boolean  @default(true)
-  createdAt    DateTime @default(now())
+  isActive     Boolean   @default(true)
+  createdAt    DateTime  @default(now())
   updatedAt    DateTime? @updatedAt
 
   supportAccesses PlatformSupportAccess[]
@@ -98,8 +102,8 @@ model Company {
   createdAt DateTime      @default(now())
 
   // Platform Relations
-  subscriptions      Subscription[]
-  supportAccesses    PlatformSupportAccess[]
+  subscriptions   Subscription[]
+  supportAccesses PlatformSupportAccess[]
 
   // Tenant Relations
   users                User[]
@@ -113,6 +117,8 @@ model Company {
   complianceCategories ComplianceCategory[]
   escalations          Escalation[]
   complianceEvidence   ComplianceEvidence[]
+
+  updatedAt DateTime @updatedAt
 
   @@map("companies")
 }
@@ -167,7 +173,7 @@ model User {
 }
 
 model Permission {
-  id          String   @id @default(uuid())
+  id          String @id @default(uuid())
   slug        String
   module      String
   description String
@@ -187,6 +193,8 @@ model RoleTemplate {
 
   defaultPermissions RoleTemplatePermission[]
   roles              Role[]
+
+  updatedAt DateTime @updatedAt
 
   @@map("role_templates")
 }
@@ -220,6 +228,8 @@ model Role {
   permissions     RolePermission[]
   roleAssignments RoleAssignment[]
 
+  updatedAt DateTime @updatedAt
+
   @@index([companyId])
   @@map("roles")
 }
@@ -235,18 +245,18 @@ model RolePermission {
 }
 
 model RoleAssignment {
-  id          String    @id @default(uuid())
-  companyId   String?
-  userId      String
-  user        User      @relation("AssignmentUser", fields: [userId], references: [id])
-  roleId      String
-  role        Role      @relation(fields: [roleId], references: [id])
-  scopeType   ScopeType
-  scopeId     String
-  grantedById String?
-  grantedByUser User?   @relation("AssignmentGrantedBy", fields: [grantedById], references: [id])
-  grantedAt   DateTime  @default(now())
-  revokedAt   DateTime?
+  id            String    @id @default(uuid())
+  companyId     String?
+  userId        String
+  user          User      @relation("AssignmentUser", fields: [userId], references: [id])
+  roleId        String
+  role          Role      @relation(fields: [roleId], references: [id])
+  scopeType     ScopeType
+  scopeId       String
+  grantedById   String?
+  grantedByUser User?     @relation("AssignmentGrantedBy", fields: [grantedById], references: [id])
+  grantedAt     DateTime  @default(now())
+  revokedAt     DateTime?
 
   @@index([userId])
   @@index([roleId])
@@ -333,6 +343,8 @@ model Project {
   tasks            Task[]
   processInstances ProcessInstance[]
   escalations      Escalation[]
+
+  createdById String
 
   @@index([teamId])
   @@map("projects")
@@ -439,18 +451,18 @@ model ProcessTemplate {
 }
 
 model ProcessTemplateStep {
-  id                  String          @id @default(uuid())
-  companyId           String?
-  templateId          String
-  template            ProcessTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
-  stepOrder           Int
-  name                String
-  stepType            StepType
-  onRejectGotoStepId  String?
-  onRejectGotoStep    ProcessTemplateStep? @relation("StepRejectionPath", fields: [onRejectGotoStepId], references: [id])
-  rejectionTargets    ProcessTemplateStep[] @relation("StepRejectionPath")
-  createdAt           DateTime        @default(now())
-  updatedAt           DateTime        @updatedAt
+  id                 String                @id @default(uuid())
+  companyId          String?
+  templateId         String
+  template           ProcessTemplate       @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  stepOrder          Int
+  name               String
+  stepType           StepType
+  onRejectGotoStepId String?
+  onRejectGotoStep   ProcessTemplateStep?  @relation("StepRejectionPath", fields: [onRejectGotoStepId], references: [id])
+  rejectionTargets   ProcessTemplateStep[] @relation("StepRejectionPath")
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
 
   instanceSteps ProcessInstanceStep[]
 
@@ -481,6 +493,8 @@ model ProcessInstance {
   updatedAt     DateTime              @updatedAt
 
   steps ProcessInstanceStep[]
+
+  title String
 
   @@index([companyId])
   @@index([templateId])
@@ -530,14 +544,16 @@ enum StepStatus {
 
 model ComplianceCategory {
   id          String   @id @default(uuid())
-  companyId   String? 
+  companyId   String?
   company     Company? @relation(fields: [companyId], references: [id])
   name        String
   description String?
-  ownerId     String? 
+  ownerId     String?
   owner       User?    @relation("ComplianceCategoryOwner", fields: [ownerId], references: [id])
 
   rules ComplianceRule[]
+
+  updatedAt DateTime @updatedAt
 
   @@index([companyId])
   @@map("compliance_categories")
@@ -545,14 +561,14 @@ model ComplianceCategory {
 
 model ComplianceRule {
   id          String              @id @default(uuid())
-  companyId   String? 
+  companyId   String?
   company     Company?            @relation(fields: [companyId], references: [id])
   name        String
   description String
   severity    Severity
   categoryId  String?
   category    ComplianceCategory? @relation(fields: [categoryId], references: [id])
-  isActive    Boolean             @default(true) 
+  isActive    Boolean             @default(true)
 
   sourceTemplateId String?
   sourceTemplate   ComplianceRule?  @relation("ClonedFrom", fields: [sourceTemplateId], references: [id])
@@ -560,6 +576,8 @@ model ComplianceRule {
 
   bindings   ComplianceBinding[]
   violations ComplianceViolation[]
+
+  updatedAt DateTime @updatedAt
 
   @@index([companyId])
   @@index([categoryId])
@@ -579,6 +597,8 @@ model ComplianceBinding {
   rule      ComplianceRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
   scopeType ScopeType
   scopeId   String
+
+  companyId String
 
   @@unique([ruleId, scopeType, scopeId])
   @@index([scopeType, scopeId])
@@ -605,6 +625,8 @@ model ComplianceViolation {
   dueDate           DateTime?
 
   evidence ComplianceEvidence[]
+
+  updatedAt DateTime @updatedAt
 
   @@index([companyId])
   @@index([entityType, entityId])
@@ -633,7 +655,7 @@ model Escalation {
   targetManager   User?            @relation("EscalationTargetManager", fields: [targetManagerId], references: [id])
   title           String
   description     String?
-  blockerType     String? 
+  blockerType     String?
   priority        Severity         @default(High)
   status          EscalationStatus @default(Open)
   createdAt       DateTime         @default(now())
@@ -652,24 +674,26 @@ enum EscalationStatus {
 }
 
 model ComplianceEvidence {
-  id           String              @id @default(uuid())
+  id           String               @id @default(uuid())
   companyId    String
-  company      Company             @relation(fields: [companyId], references: [id])
+  company      Company              @relation(fields: [companyId], references: [id])
   userId       String
-  user         User                @relation("EvidenceSubmittedBy", fields: [userId], references: [id])
+  user         User                 @relation("EvidenceSubmittedBy", fields: [userId], references: [id])
   taskId       String?
-  task         Task?               @relation(fields: [taskId], references: [id])
+  task         Task?                @relation(fields: [taskId], references: [id])
   violationId  String?
   violation    ComplianceViolation? @relation(fields: [violationId], references: [id])
   title        String
-  evidenceType String? 
+  evidenceType String?
   fileUrl      String
   notes        String?
-  status       EvidenceStatus      @default(Pending)
+  status       EvidenceStatus       @default(Pending)
   reviewedById String?
-  reviewedBy   User?               @relation("EvidenceReviewedBy", fields: [reviewedById], references: [id])
-  submittedAt  DateTime            @default(now())
+  reviewedBy   User?                @relation("EvidenceReviewedBy", fields: [reviewedById], references: [id])
+  submittedAt  DateTime             @default(now())
   reviewedAt   DateTime?
+
+  updatedAt DateTime @updatedAt
 
   @@index([companyId])
   @@index([taskId])
@@ -699,6 +723,9 @@ model Attachment {
   uploadedById  String
   uploadedBy    User     @relation(fields: [uploadedById], references: [id])
   uploadedAt    DateTime @default(now()) @map("createdAt")
+
+  storageKey String
+  updatedAt  DateTime @updatedAt
 
   @@index([companyId])
   @@index([entityType, entityId])
@@ -755,6 +782,8 @@ model Notification {
   type      String    @default("System")
   readAt    DateTime?
   createdAt DateTime  @default(now())
+
+  companyId String
 
   @@index([userId])
   @@map("notifications")

@@ -1,13 +1,6 @@
-import { Router } from 'express';
 import { prisma } from '../config/prisma.js';
 
-const router = Router();
-
-/**
- * GET /health
- * Performs a health check including safe database ping
- */
-router.get(['/health', '/api/health'], async (req, res, next) => {
+export const getHealth = async (req, res, next) => {
   try {
     // Ping database safely with SELECT 1
     await prisma.$queryRaw`SELECT 1`;
@@ -32,6 +25,4 @@ router.get(['/health', '/api/health'], async (req, res, next) => {
       },
     });
   }
-});
-
-export default router;
+};

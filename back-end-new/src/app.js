@@ -4,7 +4,7 @@ import { env } from './config/env.js';
 import { corsMiddleware } from './middleware/cors.js';
 import { generalApiLimiter, authLimiter } from './middleware/rateLimit.js';
 import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
-import healthRoutes from './routes/health.js';
+import healthRoutes from './routes/health.routes.js';
 import mainRoutes from './routes/index.js';
 
 export function createApp() {
