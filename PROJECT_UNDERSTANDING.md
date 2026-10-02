@@ -2208,7 +2208,7 @@ Layer 5: Service-level validation (per-method, inconsistent)
 #### Actual `.env` (2 lines only)
 
 ```dotenv
-DATABASE_URL="postgresql://neondb_owner:npg_dm05ZyOSXGHv@ep-floral-grass-az05r3yb.c-3.ap-southeast-1.aws.neon.tech/neondb?sslmode=require"
+DATABASE_URL="URL"
 NODE_ENV="development"
 ```
 
