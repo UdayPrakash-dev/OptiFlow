@@ -1,0 +1,23 @@
+.app {
+  min-height: 100vh;
+  background: #f8fafc;
+}
+
+.pageLayout {
+  display: flex;
+}
+
+.content {
+  flex: 1;
+  padding: 48px 32px;
+  color: #475569;
+}
+
+.content h2 {
+  margin: 0 0 12px;
+  color: #0f172a;
+}
+
+.content p {
+  margin: 0;
+}
