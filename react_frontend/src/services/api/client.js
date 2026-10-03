@@ -1,39 +1,35 @@
-import { env } from '../../config/env';
-export async function apiClient(endpoint, { body, ...customConfig } = {}) {
-  const token = sessionStorage.getItem('authToken');
-  const headers = { 'Content-Type': 'application/json' };
-  
-  if (token) {
-    headers.Authorization = `Bearer ${token}`;
-  }
+// WHY: Centralizing fetch logic here ensures every request across the app 
+// automatically includes the auth token and handles errors (like 401 Unauthorized) 
+// the exact same way, preventing duplicate code in every API call.
 
-  const config = {
-    method: body ? 'POST' : 'GET',
-    ...customConfig,
-    headers: { ...headers, ...customConfig.headers },
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+
+export const apiClient = async (endpoint, options = {}) => {
+  const token = sessionStorage.getItem('authToken');
+  
+  const headers = {
+    'Content-Type': 'application/json',
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...options.headers,
   };
 
-  if (body) {
-    config.body = JSON.stringify(body);
+  const response = await fetch(`${API_URL}${endpoint}`, {
+    ...options,
+    headers,
+  });
+
+  const data = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    // Step 6 requirement: Clear session and redirect on 401
+    if (response.status === 401) {
+      sessionStorage.removeItem('authToken');
+      window.location.href = '/login'; 
+    }
+    // Step 6 requirement: Throw readable error from message
+    throw new Error(data?.message || `Error ${response.status}: Request failed`);
   }
 
-  const url = `${env.VITE_API_URL}${endpoint}`;
-  
-  let data;
-  try {
-    const response = await fetch(url, config);
-    data = await response.json();
-    
-    if (!response.ok) {
-      if (response.status === 401) {
-        sessionStorage.removeItem('authToken');
-        window.location.href = '/login';
-      }
-      throw new Error(data.message || 'API request failed');
-    }
-    
-    return data;
-  } catch (err) {
-    throw err;
-  }
-}
+  // Step 6 requirement: unwrap { success, data }
+  return data?.data || data; 
+};

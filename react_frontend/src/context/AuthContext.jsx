@@ -1,32 +1,52 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 import { apiClient } from '../services/api/client';
 
-const AuthContext = createContext();
+// 1. Create the Context
+const AuthContext = createContext(null);
 
-export function AuthProvider({ children }) {
+export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // 2. Restore session on refresh
   useEffect(() => {
-    const token = sessionStorage.getItem('authToken');
-    if (token) {
-      // In a real app, fetch /auth/me or /platform/auth/me depending on token type
-      // We simulate success here for layout testing
-      setUser({ fullName: 'Test User', role: 'team_member', roleLabel: 'Team Member' });
-    }
-    setLoading(false);
+    const restoreSession = async () => {
+      const token = sessionStorage.getItem('authToken');
+      if (token) {
+        try {
+          // Assuming your backend has a /auth/me route to get current user details
+          const userData = await apiClient('/auth/me'); 
+          setUser(userData);
+        } catch (error) {
+          sessionStorage.removeItem('authToken');
+        }
+      }
+      setLoading(false);
+    };
+
+    restoreSession();
   }, []);
 
   const login = async (credentials) => {
-    const data = await apiClient('/auth/login', { body: credentials });
-    sessionStorage.setItem('authToken', data.data.token);
-    setUser(data.data.user);
+    const response = await apiClient('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify(credentials),
+    });
+    sessionStorage.setItem('authToken', response.token);
+    setUser({ ...response.user, role: response.role }); 
+    return response;
   };
 
   const platformLogin = async (credentials) => {
-    const data = await apiClient('/platform/auth/login', { body: credentials });
-    sessionStorage.setItem('authToken', data.data.token);
-    setUser(data.data.admin);
+    // Platform admins might have a different login endpoint
+    const response = await apiClient('/auth/platform-login', {
+      method: 'POST',
+      body: JSON.stringify(credentials),
+    });
+    sessionStorage.setItem('authToken', response.token);
+    // Hardcode system_admin role or take it from response
+    setUser({ ...response.user, role: 'system_admin', isPlatform: true }); 
+    return response;
   };
 
   const logout = () => {
@@ -40,6 +60,13 @@ export function AuthProvider({ children }) {
       {!loading && children}
     </AuthContext.Provider>
   );
-}
+};
 
-export const useAuth = () => useContext(AuthContext);
+// Custom hook to use Auth Context easily
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
