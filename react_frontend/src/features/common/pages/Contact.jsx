@@ -26,7 +26,7 @@ export default function Contact() {
           <Link to="/contact">Contact</Link>
         </nav>
         <div className="nav-auth">
-          <Link to={PATHS.PUBLIC.LOGIN} className="btn-outline">Login</Link>
+          <Link to={PATHS.PUBLIC.LOGIN} className="btn-outline">Sign In</Link>
           <Link to={PATHS.PUBLIC.REGISTER} className="btn-primary">Register</Link>
         </div>
       </header>

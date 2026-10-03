@@ -42,7 +42,7 @@ export default function Login() {
             <p className="uppercase text-xs text-blue-600 font-bold tracking-wider mb-2">
               Welcome Back
             </p>
-            <h1 className="text-2xl text-gray-900 font-bold">
+            <h1 className="text-3xl text-gray-900 font-bold">
               Sign in to your account
             </h1>
           </div>

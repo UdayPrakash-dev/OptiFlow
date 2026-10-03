@@ -48,7 +48,7 @@ export default function Landing() {
           <a href="#contact">Contact</a>
         </nav>
         <div className="nav-auth">
-          <Link to={PATHS.PUBLIC.LOGIN} className="btn-outline">Login</Link>
+          <Link to={PATHS.PUBLIC.LOGIN} className="btn-outline">Sign In</Link>
           <Link to={PATHS.PUBLIC.REGISTER} className="btn-primary">Register</Link>
         </div>
       </header>
@@ -306,7 +306,7 @@ export default function Landing() {
           </div>
 
           <div className="footer-newsletter">
-            <form onSubmit={(e) => { e.preventDefault(); alert('Subscribed!'); }}>
+            <form id="newsletterForm" onSubmit={(e) => { e.preventDefault(); alert('Subscribed!'); }}>
               <input type="email" placeholder="Email" required />
               <button type="submit">Subscribe to news</button>
             </form>
