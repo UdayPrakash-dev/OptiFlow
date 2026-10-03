@@ -21,15 +21,22 @@ export const apiClient = async (endpoint, options = {}) => {
   const data = await response.json().catch(() => null);
 
   if (!response.ok) {
-    // Step 6 requirement: Clear session and redirect on 401
+    // BUG FIX: If we get a 401 (Unauthorized), we clear the token.
+    // BUT we should only force a page reload to /login if they aren't already trying to log in!
+    // Otherwise, typing a wrong password causes the screen to flash and reload.
     if (response.status === 401) {
       sessionStorage.removeItem('authToken');
-      window.location.href = '/login'; 
+      sessionStorage.removeItem('isPlatform');
+      
+      const isTryingToLogin = endpoint.includes('/auth/login');
+      if (!isTryingToLogin) {
+        window.location.href = '/login'; 
+      }
     }
-    // Step 6 requirement: Throw readable error from message
+    // Throw a readable error message from the backend so the component can display it
     throw new Error(data?.message || `Error ${response.status}: Request failed`);
   }
 
-  // Step 6 requirement: unwrap { success, data }
+  // Unwrap { success, data }
   return data?.data || data; 
 };

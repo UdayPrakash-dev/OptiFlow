@@ -21,15 +21,20 @@ export const ProtectedRoute = ({ allowedRoles = [], isPlatform = false }) => {
   }
 
   // 2. Is this a platform route but the user is a standard tenant? Kick them out.
-  if (isPlatform && user.role !== 'system_admin') {
+  if (isPlatform && !user.isPlatform) {
     return <Navigate to={PATHS.COMMON.UNAUTHORIZED} replace />;
   }
 
-  // 3. Do they have the right role for this specific route?
+  // 3. Is this a standard tenant route, but the user is a platform admin? Kick them out.
+  if (!isPlatform && user.isPlatform) {
+    return <Navigate to={PATHS.PLATFORM.DASHBOARD} replace />;
+  }
+
+  // 4. Do they have the right role for this specific route?
   if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
     return <Navigate to={PATHS.COMMON.UNAUTHORIZED} replace />;
   }
 
-  // 4. Access granted! Render the children routes.
+  // 5. Access granted! Render the children routes.
   return <Outlet />;
 };

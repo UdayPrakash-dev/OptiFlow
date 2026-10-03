@@ -289,6 +289,7 @@ export async function handleRegisterCompany(req, res, next) {
       if (sysAdminRole) {
         await tx.roleAssignment.create({
           data: {
+            companyId: company.id,
             userId: user.id,
             roleId: sysAdminRole.id,
             scopeType: 'Company',
