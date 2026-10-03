@@ -1,7 +1,7 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { PATHS } from '../../paths';
+import { PATHS } from '../paths';
 import { ROLES } from '../../roles';
 
 // WHY: When a user simply visits the root URL ("/"), we don't know where to send them.
@@ -12,14 +12,13 @@ export const RoleRedirect = () => {
   if (loading) return <div>Loading...</div>;
 
   if (!user) {
-    return <Navigate to={PATHS.AUTH.LOGIN} replace />;
+    return <Navigate to={PATHS.PUBLIC.LOGIN} replace />;
   }
 
   // Map each role to their respective landing page
   switch (user.role) {
     case ROLES.SYSTEM_ADMIN:
-      // Note: Assuming you have a platform dashboard path, fallback to '/' if not
-      return <Navigate to="/platform/dashboard" replace />;
+      return <Navigate to={PATHS.PLATFORM.DASHBOARD} replace />;
       
     case ROLES.COMPANY_OWNER:
       return <Navigate to={PATHS.EXECUTIVE.DASHBOARD} replace />;
@@ -33,6 +32,6 @@ export const RoleRedirect = () => {
       
     default:
       // If the role isn't mapped yet, send to a default place or unauthorized
-      return <Navigate to={PATHS.AUTH.UNAUTHORIZED} replace />;
+      return <Navigate to={PATHS.COMMON.UNAUTHORIZED} replace />;
   }
 };
