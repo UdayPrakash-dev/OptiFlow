@@ -57,7 +57,9 @@ export const AuthProvider = ({ children }) => {
     
     sessionStorage.setItem('authToken', response.token);
     sessionStorage.setItem('isPlatform', 'true');
-    setUser({ ...response.user, role: 'system_admin', isPlatform: true }); 
+    
+    const loggedInUser = response.adminUser || response.user || {};
+    setUser({ ...loggedInUser, role: 'system_admin', isPlatform: true }); 
     return response;
   };
 

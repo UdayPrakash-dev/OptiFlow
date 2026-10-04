@@ -30,9 +30,20 @@ export const RoleRedirect = () => {
     case ROLES.COMPLIANCE_OFFICER:
       return <Navigate to={PATHS.COMPLIANCE.DASHBOARD} replace />;
       
-    // TODO: Add the rest of your roles as teammates build those folders!
-    // case ROLES.HR_MANAGER: 
-    //   return <Navigate to={PATHS.HR.DASHBOARD} replace />;
+    case ROLES.HR_MANAGER: 
+      return <Navigate to={PATHS.HR.DASHBOARD} replace />;
+      
+    case ROLES.PROCESS_ADMIN:
+      return <Navigate to={PATHS.PROCESS_ADMIN.DASHBOARD} replace />;
+
+    case ROLES.PROJECT_MANAGER:
+      return <Navigate to={PATHS.PM.DASHBOARD} replace />;
+
+    case ROLES.TEAM_LEADER:
+      return <Navigate to={PATHS.TEAM_LEAD.DASHBOARD} replace />;
+
+    case ROLES.TEAM_MEMBER:
+      return <Navigate to={PATHS.MEMBER.DASHBOARD} replace />;
       
     default:
       // If the role isn't mapped yet, send to a default place or unauthorized

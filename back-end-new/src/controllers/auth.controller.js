@@ -24,24 +24,24 @@ import { createAuditLog, AUDIT_ACTIONS } from '../utils/audit.js';
 function resolveTargetRoute(roleSlug) {
   switch (roleSlug) {
     case 'system_admin':
-      return 'admin-console/admin-dashboard.html';
+      return '/executive/dashboard';
     case 'company_owner':
     case 'branch_manager':
-      return 'admin/executive/executive_dashboard.html';
+      return '/executive/dashboard';
     case 'hr_manager':
     case 'access_governance':
-      return 'admin/pm/hr-dashboard.html';
+      return '/hr/dashboard';
     case 'process_admin':
-      return 'superuser/dashboard.html';
+      return '/process-admin/dashboard';
     case 'compliance_officer':
-      return 'modules/compliance.html';
+      return '/compliance/dashboard';
     case 'project_manager':
-      return 'admin/pm/pm-dashboard.html';
+      return '/pm/dashboard';
     case 'team_leader':
     case 'team_lead':
-      return 'enduser/tl-dashboard.html';
+      return '/team-lead/dashboard';
     default:
-      return 'enduser/member-dashboard.html';
+      return '/member/dashboard';
   }
 }
 

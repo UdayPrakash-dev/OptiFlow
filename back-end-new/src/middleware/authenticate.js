@@ -52,7 +52,7 @@ export function resolveUserRole(user) {
 
   const norm = normalizeRole(roleLabel);
   if (ROLE_SLUGS[norm]) {
-    roleSlug = norm;
+    if (norm === 'access_governance') { roleSlug = 'hr_manager'; } else if (norm === 'pm') { roleSlug = 'project_manager'; } else if (norm === 'team_lead') { roleSlug = 'team_leader'; } else { roleSlug = norm; }
   } else if (norm.includes('owner') || norm.includes('ceo')) {
     roleSlug = 'company_owner';
   } else if (norm.includes('branch_manager')) {
