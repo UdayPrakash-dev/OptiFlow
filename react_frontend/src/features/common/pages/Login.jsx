@@ -42,7 +42,7 @@ export default function Login() {
             <p className="uppercase text-xs text-blue-600 font-bold tracking-wider mb-2">
               Welcome Back
             </p>
-            <h1 className="text-3xl text-gray-900 font-bold">
+            <h1 className="text-2xl text-gray-900 font-bold">
               Sign in to your account
             </h1>
           </div>
@@ -118,7 +118,7 @@ export default function Login() {
                 <input type="checkbox" className="mr-2" />
                 <span className="text-gray-600">Keep me signed in</span>
               </label>
-              <Link to="#" className="text-blue-600 font-medium hover:underline">Forgot password?</Link>
+              <Link to={PATHS.PUBLIC.FORGOT_PASSWORD} className="text-blue-600 font-medium hover:underline">Forgot password?</Link>
             </div>
 
             {/* Submit Button */}

@@ -3,6 +3,7 @@ import { PATHS } from "../paths";
 const Landing = React.lazy(() => import("../../features/common/pages/Landing"));
 const Contact = React.lazy(() => import("../../features/common/pages/Contact"));
 const Login = React.lazy(() => import("../../features/common/pages/Login"));
+const ForgotPassword = React.lazy(() => import("../../features/common/pages/ForgotPassword"));
 const Register = React.lazy(
   () => import("../../features/common/pages/Register"),
 );
@@ -24,6 +25,7 @@ export const commonRoutes = [
   { path: PATHS.PUBLIC.LANDING, element: <Landing /> },
   { path: PATHS.PUBLIC.CONTACT, element: <Contact /> },
   { path: PATHS.PUBLIC.LOGIN, element: <Login /> },
+  { path: PATHS.PUBLIC.FORGOT_PASSWORD, element: <ForgotPassword /> },
   { path: PATHS.PUBLIC.REGISTER, element: <Register /> },
   { path: PATHS.PUBLIC.PLATFORM_LOGIN, element: <PlatformLogin /> },
   { path: PATHS.COMMON.NOTIFICATIONS, element: <Notifications /> },
