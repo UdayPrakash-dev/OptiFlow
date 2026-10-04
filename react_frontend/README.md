@@ -1,6 +1,6 @@
 # OptiFlow Frontend
 
-This is the Vite React frontend for OptiFlow.i
+This is the Vite React frontend for OptiFlow.
 
 ## Folder Map
 - `src/app/`: Routing logic, guards, path constants, and feature route arrays.
