@@ -17,6 +17,7 @@ const Profile = React.lazy(() => import("../../features/common/pages/Profile"));
 const Unauthorized = React.lazy(
   () => import("../../features/common/pages/Unauthorized"),
 );
+const ComponentShowcase = React.lazy(() => import("../../features/common/pages/ComponentShowcase"));
 const NotFound = React.lazy(
   () => import("../../features/common/pages/NotFound"),
 );
@@ -31,5 +32,6 @@ export const commonRoutes = [
   { path: PATHS.COMMON.NOTIFICATIONS, element: <Notifications /> },
   { path: PATHS.COMMON.PROFILE, element: <Profile /> },
   { path: PATHS.COMMON.UNAUTHORIZED, element: <Unauthorized /> },
+  { path: "/components", element: <ComponentShowcase /> },
   { path: PATHS.COMMON.NOT_FOUND, element: <NotFound /> },
 ];

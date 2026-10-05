@@ -1,5 +1,5 @@
-import React from 'react';
-import styles from './StatCard.module.css';
+import React from "react";
+import styles from "./StatCard.module.css";
 
 export const StatCard = ({
   title,
@@ -25,7 +25,7 @@ export const StatCard = ({
       </div>
 
       <div className={styles.body}>
-        <span className={styles.value}>{value ?? '—'}</span>
+        <span className={styles.value}>{value ?? "—"}</span>
         {trend && <span className={styles.trend}>{trend}</span>}
       </div>
 

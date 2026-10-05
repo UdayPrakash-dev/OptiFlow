@@ -1,92 +1,99 @@
- import React, { useState, useEffect } from 'react';                                                                                                             
-    import { apiClient } from '../../../services/api/client';                                                                                                       
-    import { useAuth } from '../../../context/AuthContext';                                                                                                         
-                                                                                                                                                                    
-    export default function ComplianceDashboard() {                                                                                                                 
-      const { user } = useAuth();                                                                                                                                   
-                                                                                                                                                                    
-      // State for our UI metrics                                                                                                                                   
-      const [metrics, setMetrics] = useState({                                                                                                                      
-        totalRules: 0,                                                                                                                                              
-        activeViolations: 0,                                                                                                                                        
-        resolvedViolations: 0                                                                                                                                       
-      });                                                                                                                                                           
-                                                                                                                                                                    
-      const [loading, setLoading] = useState(true);                                                                                                                 
-      const [isScanning, setIsScanning] = useState(false);                                                                                                          
-                                                                                                                                                                    
-      useEffect(() => {                                                                                                                                             
-        // TODO: Write an async function to fetch data from '/compliance/metrics'                                                                                   
-        // (If the backend doesn't have a /metrics route yet, you can fetch from /compliance-rules and /compliance-violations and do the math!)                     
-        // 1. Use apiClient to fetch the data                                                                                                                       
-        // 2. setMetrics with the lengths of the arrays                                                                                                             
-        // 3. setLoading to false                                                                                                                                   
-      }, []);                                                                                                                                                       
-                                                                                                                                                                    
-      // Here is where we hook into the backend engine I just built!                                                                                                
-      const triggerScan = async () => {                                                                                                                             
-        setIsScanning(true);                                                                                                                                        
-        try {                                                                                                                                                       
-          // TODO: Use apiClient to POST to '/compliance-rules/run-engine'                                                                                          
-          // 1. Await the response                                                                                                                                  
-          // 2. Show an alert() with response.message (e.g. "Found 3 new violations!")                                                                              
-          // 3. Re-fetch your metrics so the dashboard updates                                                                                                      
-        } catch (error) {                                                                                                                                           
-          alert("Scan failed: " + error.message);                                                                                                                   
-        } finally {                                                                                                                                                 
-          setIsScanning(false);                                                                                                                                     
-        }                                                                                                                                                           
-      };                                                                                                                                                            
-                                                                                                                                                                    
-      if (loading) {                                                                                                                                                
-        // TODO: Style this loading state to look professional                                                                                                      
-        return <div>Loading compliance engine...</div>;                                                                                                             
-      }                                                                                                                                                             
-                                                                                                                                                                    
-      return (                                                                                                                                                      
-        <div className="p-6">                                                                                                                                       
-          <div className="flex justify-between items-center mb-8">                                                                                                  
-            <div>                                                                                                                                                   
-              {/* TODO: Style this heading to match the app (e.g., text-2xl font-bold text-slate-800) */}                                                           
-              <h1>Compliance Command Center</h1>                                                                                                                    
-              <p className="text-gray-500">Automated engine status and active flags.</p>                                                                            
-            </div>                                                                                                                                                  
-                                                                                                                                                                    
-            {/* Manual Trigger Button */}                                                                                                                           
-            <button                                                                                                                                                 
-              onClick={triggerScan}                                                                                                                                 
-              disabled={isScanning}                                                                                                                                 
-              className="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700 disabled:bg-blue-300"                                                    
-            >                                                                                                                                                       
-              {isScanning ? 'Running Engine...' : 'Run Automated Scan'}                                                                                             
-            </button>                                                                                                                                               
-          </div>                                                                                                                                                    
-                                                                                                                                                                    
-          {/* TODO: Create a CSS Grid here with 3 columns (grid-cols-1 md:grid-cols-3) */}                                                                          
-          <div className="grid gap-6">                                                                                                                              
-                                                                                                                                                                    
-            {/* Metric Card 1 */}                                                                                                                                   
-            <div className="bg-white p-6 rounded-lg shadow border border-gray-200">                                                                                 
-              <h3 className="text-sm font-medium text-gray-500">Active Rules Monitored</h3>                                                                         
-              {/* TODO: Display metrics.totalRules here in a large, bold font */}                                                                                   
-              <div className="text-3xl font-bold mt-2">{metrics.totalRules}</div>                                                                                   
-            </div>                                                                                                                                                  
-  
-            {/* Metric Card 2 */}
-            <div className="bg-white p-6 rounded-lg shadow border border-gray-200 border-l-4 border-l-red-500">
-              <h3 className="text-sm font-medium text-gray-500">Automated Flags (Open)</h3>
-              {/* TODO: Display metrics.activeViolations here. */}
-              <div className="text-3xl font-bold mt-2 text-red-600">{metrics.activeViolations}</div>
-            </div>
-  
-            {/* Metric Card 3 */}
-            <div className="bg-white p-6 rounded-lg shadow border border-gray-200 border-l-4 border-l-green-500">
-              <h3 className="text-sm font-medium text-gray-500">Resolved Violations</h3>
-              {/* TODO: Display metrics.resolvedViolations here */}
-              <div className="text-3xl font-bold mt-2 text-green-600">{metrics.resolvedViolations}</div>
-            </div>
-  
-          </div>
-        </div>
-      );
+import React, { useState, useEffect } from "react";
+import { apiClient } from "../../../services/api/client";
+import { useAuth } from "../../../context/AuthContext";
+
+export default function ComplianceDashboard() {
+  const { user } = useAuth();
+
+  // State to hold our dashboard numbers
+  const [metrics, setMetrics] = useState({
+    totalRules: 0,
+    activeViolations: 0,
+    resolvedViolations: 0,
+  });
+
+  const [loading, setLoading] = useState(true);
+  const [isScanning, setIsScanning] = useState(false);
+
+  // 1. FETCH DATA ON LOAD
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      try {
+        // TODO: We don't have a specific /metrics endpoint yet.
+        // Instead, make TWO calls using apiClient():
+        // call 1: '/compliance-rules'
+        // call 2: '/compliance-violations'
+        // TODO: Count them!
+        // activeViolations = filter the violations array where status === 'Open'
+        // resolvedViolations = filter the violations array where status === 'Resolved'
+        // TODO: Update setMetrics(...) with your counts.
+      } catch (error) {
+        console.error("Failed to load metrics", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
+  // 2. RUN THE AUTOMATED ENGINE
+  const triggerScan = async () => {
+    setIsScanning(true);
+    try {
+      // TODO: Use apiClient to make a POST request to '/compliance-rules/run-engine'
+      // TODO: Alert the user with the result (e.g. alert("Engine finished!"))
+      // TODO: (Bonus) Re-run the logic from fetchDashboardData() here so the numbers update instantly!
+    } catch (error) {
+      alert("Scan failed: " + error.message);
+    } finally {
+      setIsScanning(false);
     }
+  };
+
+  // 3. UI RENDERING
+  if (loading) {
+    // TODO: Add a nice Tailwind spinner or skeleton loader here
+    return <div>Loading compliance engine...</div>;
+  }
+
+  return (
+    <div className="p-6">
+      <div className="flex justify-between items-center mb-8">
+        <div>
+          {/* TODO: Add Tailwind classes to make this look like a solid page header */}
+          <h1>Compliance Command Center</h1>
+          <p>Automated engine status and active flags.</p>
+        </div>
+
+        {/* TODO: Add Tailwind classes to make this look like a primary action button */}
+        <button onClick={triggerScan} disabled={isScanning}>
+          {isScanning ? "Running Engine..." : "Run Automated Scan"}
+        </button>
+      </div>
+
+      {/* TODO: Convert this to a CSS Grid (e.g. grid grid-cols-1 md:grid-cols-3 gap-6) */}
+      <div>
+        {/* Metric Card 1: Total Rules */}
+        <div>
+          <h3>Active Rules Monitored</h3>
+          <div>{metrics.totalRules}</div>
+        </div>
+
+        {/* Metric Card 2: Active Violations */}
+        {/* TODO: Make the border/text RED to signify danger if activeViolations > 0 */}
+        <div>
+          <h3>Automated Flags (Open)</h3>
+          <div>{metrics.activeViolations}</div>
+        </div>
+
+        {/* Metric Card 3: Resolved Violations */}
+        {/* TODO: Make the border/text GREEN to signify safety */}
+        <div>
+          <h3>Resolved Violations</h3>
+          <div>{metrics.resolvedViolations}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
