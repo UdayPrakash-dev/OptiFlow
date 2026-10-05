@@ -63,3 +63,18 @@ Here is the exact lifecycle of an automated compliance check:
    When the Compliance Officer refreshes the React Compliance Dashboard, the React component fetches from `/api/compliance-violations`. The backend queries Prisma, returns the JSON array of violations, and the React UI renders a red alert card showing that Task #105 broke the rules.
 8. **Resolution:** 
    The Officer fixes the task, uploads a screenshot, and clicks "Resolve". React sends a `PATCH` request to update the violation status to `Resolved` and creates a `ComplianceEvidence` record in the database.
+
+---
+
+## 4. Scalability & Future Automation Plan (V2)
+
+### The Current MVP Approach (Hybrid Engine)
+Currently, the engine relies on hardcoded evaluator functions mapped to specific rule names (e.g., "Overdue Tasks"). 
+- **System Templates:** The frontend provides a dropdown of pre-defined rules that the backend engine is programmed to understand and automate.
+- **Custom Policies:** Users can create custom text-based rules (e.g., "Must wear blue shirts"). These are ignored by the automated engine and require manual auditing and violation flagging by human officers.
+
+### The V2 Architecture (Fully Generic Engine)
+To allow users to create completely custom automated rules without developer intervention, the architecture will evolve to a generic AST (Abstract Syntax Tree) or JSON Logic system:
+1. **Schema Update:** `ComplianceRule` will receive a `logic` field (e.g., `JSONB`) storing the exact query structure (e.g., `{"entity": "Project", "field": "budget", "operator": ">", "value": 5000}`).
+2. **Visual Query Builder:** The React frontend will feature a drag-and-drop rule builder to construct this JSON safely.
+3. **Dynamic Query Compilation:** The Node.js engine will parse the JSON `logic` field and dynamically construct Prisma `where` clauses (`prisma[entity].findMany(buildWhere(logic))`), making the engine infinitely scalable to any data model.
