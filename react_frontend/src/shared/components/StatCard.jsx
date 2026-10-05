@@ -1,22 +1,37 @@
-import React from 'react';
+import React from "react";
+import styles from "./StatCard.module.css";
 
-// WHY: The Executive Dashboard needs to display metrics (like total violations, active projects).
-// A reusable StatCard keeps the visual layout of these metrics consistent.
-export const StatCard = ({ title, value, trend, icon }) => {
+export const StatCard = ({
+  title,
+  value,
+  subtitle,
+  icon,
+  trend,
+  loading = false,
+}) => {
+  if (loading) {
+    return (
+      <div className={`${styles.card} ${styles.loading}`}>
+        <span>Loading metric...</span>
+      </div>
+    );
+  }
+
   return (
-    <div className="bg-white overflow-hidden shadow rounded-lg border border-gray-100 p-5">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-medium text-gray-500 truncate">{title}</h3>
-        {icon && <div className="text-gray-400">{icon}</div>}
+    <div className={styles.card}>
+      <div className={styles.header}>
+        <span className={styles.title}>{title}</span>
+        {icon && <div className={styles.iconWrapper}>{icon}</div>}
       </div>
-      <div className="mt-3 flex items-baseline text-3xl font-bold text-gray-900">
-        {value}
+
+      <div className={styles.body}>
+        <span className={styles.value}>{value ?? "—"}</span>
+        {trend && <span className={styles.trend}>{trend}</span>}
       </div>
-      {trend && (
-        <div className={`mt-2 text-sm ${trend.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
-          {trend} from last month
-        </div>
-      )}
+
+      {subtitle && <p className={styles.subtitle}>{subtitle}</p>}
     </div>
   );
 };
+
+export default StatCard;
