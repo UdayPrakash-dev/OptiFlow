@@ -1,3 +1,4 @@
+import { runComplianceEngine } from "../engine/compliance.engine.js";
 import path from 'path';
 import fs from 'fs';
 import { pipeline } from 'stream/promises';
@@ -222,3 +223,22 @@ export async function deleteComplianceRule(req, res, next) {
   }
 }
 
+
+import { runComplianceEngine } from '../engine/compliance.engine.js';
+
+/**
+ * POST /api/compliance/rules/run-engine
+ * Manually triggers the automated compliance engine for the tenant.
+ */
+export async function triggerComplianceEngine(req, res, next) {
+  try {
+    const result = await runComplianceEngine(req.user.companyId);
+    res.status(200).json({
+      success: true,
+      message: `Engine completed. Found ${result.newViolations} new violations.`,
+      data: result
+    });
+  } catch (err) {
+    next(err);
+  }
+}

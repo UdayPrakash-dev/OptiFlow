@@ -7,7 +7,8 @@ import {
   getComplianceRuleById,
   createComplianceRule,
   updateComplianceRule,
-  deleteComplianceRule
+  deleteComplianceRule,
+  triggerComplianceEngine
 } from '../controllers/compliance-rules.controller.js';
 
 const router = Router();
@@ -31,9 +32,11 @@ router.delete(
   ['/compliance-rules/:id', '/api/compliance-rules/:id'],
   authenticate,
   requireRoles(ROLES.COMPANY_OWNER, ROLES.SYSTEM_ADMIN, 'superuser'),
-  deleteComplianceRule
+  deleteComplianceRule,
+  triggerComplianceEngine
 );
 
 
 
+router.post(["/compliance-rules/run-engine", "/api/compliance-rules/run-engine"], authenticate, requireRoles(ROLES.COMPANY_OWNER, ROLES.COMPLIANCE_OFFICER, "superuser", "compliance_officer"), triggerComplianceEngine);
 export default router;
