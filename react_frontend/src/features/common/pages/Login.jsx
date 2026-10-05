@@ -1,43 +1,51 @@
-import React, { useState } from 'react';
-import { useAuth } from '../../../context/AuthContext';
-import { PATHS } from '../../../app/paths';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import { useAuth } from "../../../context/AuthContext";
+import { PATHS } from "../../../app/paths";
+import { Link, useNavigate } from "react-router-dom";
 
 export default function Login() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setError('');
+    setError("");
     try {
       await login({ email, password });
-      navigate('/'); 
+      navigate("/");
     } catch (error) {
-      setError('Login Failed : ' + error.message);
+      setError("Login Failed : " + error.message);
     }
   };
 
   return (
     <div className="min-h-screen bg-[#f0f4ff] flex flex-col font-sans">
-      
       {/* Auth Header */}
       <header className="flex justify-between items-center px-8 py-6">
         <div className="text-xl font-bold text-gray-800">OfficeSync</div>
         <nav className="space-x-6">
-          <Link to="/" className="text-gray-800 font-medium hover:text-blue-600">Home</Link>
-          <Link to="/contact" className="text-gray-800 font-medium hover:text-blue-600">Contact</Link>
+          <Link
+            to="/"
+            className="text-gray-800 font-medium hover:text-blue-600"
+          >
+            Home
+          </Link>
+          <Link
+            to="/contact"
+            className="text-gray-800 font-medium hover:text-blue-600"
+          >
+            Contact
+          </Link>
         </nav>
       </header>
 
       {/* Main Content */}
       <main className="flex-1 flex justify-center items-center p-8">
         <div className="bg-white p-10 rounded-xl shadow-[0_10px_25px_rgba(0,0,0,0.05)] w-full max-w-[480px]">
-          
           <div className="text-center mb-8">
             <p className="uppercase text-xs text-blue-600 font-bold tracking-wider mb-2">
               Welcome Back
@@ -46,7 +54,7 @@ export default function Login() {
               Sign in to your account
             </h1>
           </div>
-            {error && (
+          {error && (
             <div className="mb-6 p-3 bg-red-50 text-red-700 border border-red-200 rounded text-sm text-center font-medium">
               {error}
             </div>
@@ -84,12 +92,7 @@ export default function Login() {
                   // pr-10 adds padding to the right so text doesn't hide under the eye icon
                   className="w-full p-3 pr-10 border border-gray-300 rounded-md text-sm text-gray-900 focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
                 />
-                
-                {/* 
-                  top-1/2 = top: 50%
-                  -translate-y-1/2 = transform: translateY(-50%)
-                  This perfectly centers the icon vertically!
-                */}
+
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
@@ -97,13 +100,33 @@ export default function Login() {
                 >
                   {showPassword ? (
                     // Eye Slash Icon (Visible -> hide)
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
                       <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
                       <line x1="1" y1="1" x2="23" y2="23"></line>
                     </svg>
                   ) : (
                     // Eye Icon (Hidden -> show)
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="20"
+                      height="20"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
                       <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                       <circle cx="12" cy="12" r="3"></circle>
                     </svg>
@@ -118,7 +141,12 @@ export default function Login() {
                 <input type="checkbox" className="mr-2" />
                 <span className="text-gray-600">Keep me signed in</span>
               </label>
-              <Link to={PATHS.PUBLIC.FORGOT_PASSWORD} className="text-blue-600 font-medium hover:underline">Forgot password?</Link>
+              <Link
+                to={PATHS.PUBLIC.FORGOT_PASSWORD}
+                className="text-blue-600 font-medium hover:underline"
+              >
+                Forgot password?
+              </Link>
             </div>
 
             {/* Submit Button */}
@@ -139,15 +167,26 @@ export default function Login() {
               type="button"
               className="w-full p-3.5 bg-white text-gray-900 border border-gray-300 rounded-md font-semibold flex justify-center items-center gap-2 hover:bg-gray-50 transition-colors"
             >
-               Sign in with Organization SSO
+              Sign in with Organization SSO
             </button>
           </form>
 
           <div className="text-center mt-6 text-sm text-gray-500">
-            New organization? <Link to={PATHS.PUBLIC.REGISTER} className="text-blue-600 font-semibold hover:underline">Register your company</Link>
+            New organization?{" "}
+            <Link
+              to={PATHS.PUBLIC.REGISTER}
+              className="text-blue-600 font-semibold hover:underline"
+            >
+              Register your company
+            </Link>
           </div>
           <div className="text-center mt-2 text-xs">
-            <Link to={PATHS.PUBLIC.PLATFORM_LOGIN} className="text-blue-600 hover:text-blue-900">🔑 Platform Admin Login</Link>
+            <Link
+              to={PATHS.PUBLIC.PLATFORM_LOGIN}
+              className="text-blue-600 hover:text-blue-900"
+            >
+              🔑 Platform Admin Login
+            </Link>
           </div>
         </div>
       </main>
@@ -156,8 +195,12 @@ export default function Login() {
       <footer className="flex justify-between px-8 py-6 text-xs text-gray-500">
         <div>© 2026 OfficeSync Inc. All rights reserved.</div>
         <div className="space-x-4">
-          <Link to="#" className="hover:text-gray-700">Privacy Policy</Link>
-          <Link to="#" className="hover:text-gray-700">Terms of Service</Link>
+          <Link to="#" className="hover:text-gray-700">
+            Privacy Policy
+          </Link>
+          <Link to="#" className="hover:text-gray-700">
+            Terms of Service
+          </Link>
         </div>
       </footer>
     </div>
