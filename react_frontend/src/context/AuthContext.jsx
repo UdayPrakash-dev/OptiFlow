@@ -41,10 +41,12 @@ export const AuthProvider = ({ children }) => {
       body: JSON.stringify(credentials),
     });
     
+    const isPlatformAdmin = response.role === 'platform_admin';
+    
     sessionStorage.setItem('authToken', response.token);
-    sessionStorage.setItem('isPlatform', 'false');
+    sessionStorage.setItem('isPlatform', isPlatformAdmin ? 'true' : 'false');
     // response.user and response.role are guaranteed by the backend's handleLogin
-    setUser({ ...response.user, role: response.role, isPlatform: false }); 
+    setUser({ ...response.user, role: response.role, isPlatform: isPlatformAdmin }); 
     return response;
   };
 

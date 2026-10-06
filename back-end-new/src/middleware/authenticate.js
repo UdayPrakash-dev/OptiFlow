@@ -113,11 +113,40 @@ export async function authenticate(req, res, next) {
       throw new UnauthorizedError('Authentication failed: Token contains no subject identity');
     }
 
-    // Reload active user from database to verify current account status and relationships
+    // --- PLATFORM ADMIN CHECK ---
+    if (decoded.type === 'platform_admin' || decoded.role === 'platform_admin') {
+      const adminUser = await prisma.platformAdminUser.findUnique({
+        where: { id: String(userId) },
+      });
+
+      if (!adminUser) {
+        throw new UnauthorizedError('Authentication failed: Platform administrator account no longer exists');
+      }
+
+      if (!adminUser.isActive) {
+        throw new UnauthorizedError('Authentication failed: Platform administrator account is deactivated');
+      }
+
+      req.user = {
+        id: adminUser.id,
+        email: adminUser.email,
+        fullName: adminUser.fullName,
+        role: 'platform_admin',
+        roleLabel: 'Platform Admin',
+        isPlatform: true,
+      };
+
+      return next();
+    }
+    // ----------------------------
+
+    // Reload active tenant user from database
     const user = await prisma.user.findUnique({
       where: { id: String(userId) },
       include: {
-        company: true,
+        company: {
+          include: { subscriptions: true }
+        },
         roleAssignments: {
           include: { role: true },
           orderBy: { grantedAt: 'desc' },
@@ -139,6 +168,17 @@ export async function authenticate(req, res, next) {
 
     if (user.company && user.company.status && user.company.status !== 'Active') {
       throw new UnauthorizedError('Authentication failed: Tenant company account is inactive or suspended');
+    }
+
+    // TRIAL & SUBSCRIPTION CHECK ENFORCEMENT
+    const activeSub = user.company?.subscriptions?.[0];
+    if (activeSub) {
+      if (activeSub.status === 'Trialing' && new Date() > new Date(activeSub.currentPeriodEnd)) {
+        throw new UnauthorizedError('PAYMENT_REQUIRED: Your 14-day free trial has expired. Please upgrade your plan.');
+      }
+      if (activeSub.status === 'PastDue' || activeSub.status === 'Cancelled') {
+        throw new UnauthorizedError('PAYMENT_REQUIRED: Your subscription is past due or cancelled.');
+      }
     }
 
     const { roleLabel, roleSlug, matchedAssignment } = resolveUserRole(user);

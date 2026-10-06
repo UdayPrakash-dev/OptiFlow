@@ -146,6 +146,33 @@ export async function createUser(req, res, next) {
       ]);
     }
 
+    // --- SECURITY IMPLEMENTATION 2: Feature Gating (Plan Limits) ---
+    // 1. Count how many users already exist in this company
+    const currentUserCount = await prisma.user.count({
+      where: { companyId: req.user.companyId },
+    });
+
+    // 2. Fetch the company's active subscription and its associated plan
+    const company = await prisma.company.findUnique({
+      where: { id: req.user.companyId },
+      include: {
+        subscriptions: {
+          where: { status: { in: ['Active', 'Trialing'] } },
+          include: { plan: true },
+        },
+      },
+    });
+
+    // 3. Compare and Block
+    const activeSub = company?.subscriptions?.[0];
+    const maxUsers = activeSub?.plan?.maxUsers;
+
+    // If maxUsers is null, it means unlimited. Otherwise, enforce the limit.
+    if (maxUsers !== null && maxUsers !== undefined && currentUserCount >= maxUsers) {
+      throw new ForbiddenError(`Plan limit reached: Your current plan only allows up to ${maxUsers} users. Please upgrade your plan.`);
+    }
+    // ----------------------------------------------------------------
+
     // Check duplicate email within this company
     const existing = await prisma.user.findFirst({
       where: { companyId: req.user.companyId, email },
