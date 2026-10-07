@@ -60,6 +60,60 @@ export async function handleLogin(req, res, next) {
       throw new UnauthorizedError('Invalid email or password');
     }
 
+    // --- PLATFORM ADMIN CHECK (Unified Login) ---
+    // We check the PlatformAdminUser table first. If the email exists here,
+    // they are a super-admin logging into the platform dashboard.
+    const platformAdmin = await prisma.platformAdminUser.findUnique({
+      where: { email: email.trim().toLowerCase() }
+    });
+
+    if (platformAdmin) {
+      if (!platformAdmin.isActive) {
+        throw new UnauthorizedError('Platform administrator account is deactivated');
+      }
+
+      const isMatch = await bcrypt.compare(password, platformAdmin.passwordHash);
+      if (!isMatch) {
+        throw new UnauthorizedError('Invalid email or password');
+      }
+
+      const token = jwt.sign(
+        {
+          sub: platformAdmin.id,
+          role: 'platform_admin',
+          type: 'platform_admin',
+          email: platformAdmin.email,
+          fullName: platformAdmin.fullName,
+        },
+        env.JWT_SECRET,
+        { expiresIn: env.JWT_EXPIRES_IN || '8h' }
+      );
+
+      return res.status(200).json({
+        success: true,
+        message: 'Platform admin authenticated successfully',
+        data: {
+          success: true,
+          token,
+          targetRoute: '/platform/dashboard',
+          role: 'platform_admin',
+          roleSlug: 'platform_admin',
+          roleLabel: 'Platform Admin',
+          user: {
+            id: platformAdmin.id,
+            fullName: platformAdmin.fullName,
+            email: platformAdmin.email,
+            role: 'platform_admin',
+            roleLabel: 'Platform Admin',
+            assignedRole: 'Platform Admin',
+            targetRoute: '/platform/dashboard'
+          },
+        },
+      });
+    }
+    // --------------------------------------------
+
+    // If not a platform admin, proceed with standard tenant user login
     const user = await prisma.user.findFirst({
       where: { email: { equals: email.trim(), mode: 'insensitive' } },
       include: {
@@ -197,6 +251,16 @@ export async function handleRegisterCompany(req, res, next) {
     );
     validateEmail(ownerEmail, 'ownerEmail');
 
+    // --- SECURITY IMPLEMENTATION 1: Business Email Validation ---
+    // Block common free email providers to ensure B2B legitimacy.
+    const freeEmailProviders = ['gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'aol.com', 'icloud.com'];
+    const emailDomain = ownerEmail.split('@')[1]?.toLowerCase();
+    
+    if (freeEmailProviders.includes(emailDomain)) {
+      throw new AppError('Registration restricted to corporate emails. Please use your work email address.', 400);
+    }
+    // -------------------------------------------------------------
+
     if (typeof password !== 'string' || password.length < 8) {
       throw new ValidationError('Password validation failed', [
         { field: 'password', message: 'Password must be at least 8 characters long' },
@@ -220,6 +284,8 @@ export async function handleRegisterCompany(req, res, next) {
       const company = await tx.company.create({
         data: {
           legalName: companyLegalName,
+          size: body.companySize || null,
+          industry: body.industry || null,
           status: 'Active',
         },
       });
@@ -244,14 +310,17 @@ export async function handleRegisterCompany(req, res, next) {
       }
 
       if (effectivePlanId) {
-        const isYearly = String(billingCycle).toUpperCase() === 'YEARLY' || String(billingCycle).toUpperCase() === 'ANNUAL';
+        // ALWAYS put new signups on a 14-day free trial.
+        // We calculate 14 days in milliseconds: 14 days * 24 hrs * 60 mins * 60 secs * 1000 ms
+        const trialDurationMs = 14 * 24 * 60 * 60 * 1000;
+        
         await tx.subscription.create({
           data: {
             companyId: company.id,
             planId: effectivePlanId,
-            billingCycle: isYearly ? 'Annual' : 'Monthly',
-            status: 'Active',
-            currentPeriodEnd: new Date(Date.now() + (isYearly ? 365 : 30) * 24 * 60 * 60 * 1000),
+            billingCycle: 'Monthly', // Default to monthly after trial
+            status: 'Trialing', // Activate the trial status!
+            currentPeriodEnd: new Date(Date.now() + trialDurationMs), // Expires in exactly 14 days
           },
         });
       }

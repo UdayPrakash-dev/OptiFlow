@@ -165,6 +165,7 @@ export default function Login() {
 
             <button
               type="button"
+              onClick={() => alert("Enterprise SSO (SAML/Okta) integration is coming soon! Contact Sales to upgrade your plan.")}
               className="w-full p-3.5 bg-white text-gray-900 border border-gray-300 rounded-md font-semibold flex justify-center items-center gap-2 hover:bg-gray-50 transition-colors"
             >
               Sign in with Organization SSO
@@ -178,14 +179,6 @@ export default function Login() {
               className="text-blue-600 font-semibold hover:underline"
             >
               Register your company
-            </Link>
-          </div>
-          <div className="text-center mt-2 text-xs">
-            <Link
-              to={PATHS.PUBLIC.PLATFORM_LOGIN}
-              className="text-blue-600 hover:text-blue-900"
-            >
-              🔑 Platform Admin Login
             </Link>
           </div>
         </div>

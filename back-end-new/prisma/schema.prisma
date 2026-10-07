@@ -98,6 +98,8 @@ model PlatformSupportAccess {
 model Company {
   id        String        @id @default(uuid())
   legalName String
+  size      String?       // PLG: e.g. "1-10", "11-50", etc.
+  industry  String?       // PLG: e.g. "IT", "HR", etc.
   status    CompanyStatus @default(Active)
   createdAt DateTime      @default(now())
 

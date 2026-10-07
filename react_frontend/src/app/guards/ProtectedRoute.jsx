@@ -3,8 +3,6 @@ import { Navigate, Outlet } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { PATHS } from '../paths';
 
-// WHY: This acts as a security "bouncer" for your routes. 
-// You wrap this around your private routes in the router.
 // It uses <Outlet /> to render the nested child routes if the user is allowed in.
 export const ProtectedRoute = ({ allowedRoles = [], isPlatform = false }) => {
   const { user, loading } = useAuth();
@@ -20,7 +18,7 @@ export const ProtectedRoute = ({ allowedRoles = [], isPlatform = false }) => {
     return <Navigate to={isPlatform ? PATHS.PUBLIC.PLATFORM_LOGIN : PATHS.PUBLIC.LOGIN} replace />;
   }
 
-  // 2. Is this a platform route but the user is a standard tenant? Kick them out.
+  // 2. Is this a platform route but the user is a standard tenant? Kick to login page
   if (isPlatform && !user.isPlatform) {
     return <Navigate to={PATHS.COMMON.UNAUTHORIZED} replace />;
   }

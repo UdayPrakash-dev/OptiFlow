@@ -1,154 +1,163 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { PATHS } from "../../../app/paths";
 import { Link, useNavigate } from "react-router-dom";
 import { apiClient } from "../../../services/api/client";
 
 export default function Register() {
-  // --- 1. Wizard Step State ---
-  const [step, setStep] = useState(1);
-
-  // --- 2. Step 1 State (Registration Details) ---
   const [ownerFullName, setOwnerFullName] = useState("");
   const [ownerEmail, setOwnerEmail] = useState("");
   const [companyLegalName, setCompanyLegalName] = useState("");
+  const [companySize, setCompanySize] = useState("");
+  const [industry, setIndustry] = useState("");
   const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [billingCycle, setBillingCycle] = useState("MONTHLY");
-  const [planId, setPlanId] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
-  // Data fetched from backend
-  const [availablePlans, setAvailablePlans] = useState([]);
-  const [loadingPlans, setLoadingPlans] = useState(true);
   const [error, setError] = useState("");
-
-  // --- 3. Step 2 State (Fake Payment Details) ---
-  const [cardName, setCardName] = useState("");
-  const [cardNumber, setCardNumber] = useState("");
-  const [cardExpiry, setCardExpiry] = useState("");
-  const [cardCvc, setCardCvc] = useState("");
-
-  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [verificationSent, setVerificationSent] = useState(false);
   const navigate = useNavigate();
 
-  // Fetch Public Plans on mount
-  useEffect(() => {
-    const fetchPlans = async () => {
-      try {
-        const response = await apiClient("/auth/public-plans");
-        setAvailablePlans(response);
-        if (response.length > 0) setPlanId(response[0].id);
-      } catch (err) {
-        setError("Could not load pricing plans.");
-      } finally {
-        setLoadingPlans(false);
-      }
-    };
-    fetchPlans();
-  }, []);
-
-  // --- Handle Transition to Step 2 ---
-  const handleContinueToPayment = (e) => {
+  const handleRegister = async (e) => {
     e.preventDefault();
     setError("");
 
-    if (password !== confirmPassword) {
-      setError("Passwords do not match. Please try again.");
+    if (!companySize) {
+      setError("Please select your company size.");
       return;
     }
 
-    // Move to payment screen
-    setStep(2);
-  };
+    if (!industry) {
+      setError("Please select your industry or primary use case.");
+      return;
+    }
 
-  // --- Handle Final Submission & Payment ---
-  const handleProcessPayment = async (e) => {
-    e.preventDefault();
-    setError("");
-    setIsProcessingPayment(true);
+    setIsProcessing(true);
 
     try {
-      // 1. Fake 2-second payment processing delay
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-
-      // 2. Build the payload for our actual backend registration
       const payload = {
-        companyLegalName,
+        companyLegalName, // Note: Label is "Workspace Name" but field is still companyLegalName for API compatibility
         ownerFullName,
         ownerEmail,
         password,
-        planId,
-        billingCycle,
+        companySize,
+        industry,
       };
 
-      // 3. Call the real backend
       const response = await apiClient("/auth/register-company", {
         method: "POST",
         body: JSON.stringify(payload),
       });
 
-      // 4. Save token and redirect
       sessionStorage.setItem("authToken", response.token);
       sessionStorage.setItem("isPlatform", "false");
 
-      // Fix for the back button: reset the processing state before we leave!
-      setIsProcessingPayment(false);
-
-      // Force reload to root. RoleRedirect will bounce the new company_owner to Executive Dashboard
-      window.location.href = "/";
+      setIsProcessing(false);
+      setVerificationSent(true);
     } catch (err) {
       setError(
-        err.message || "Payment or Registration failed. Please try again.",
+        err.message || "Registration failed. Please try again."
       );
-      setIsProcessingPayment(false);
+      setIsProcessing(false);
     }
   };
 
-  // Calculate fake price for the UI based on selected cycle
-  const priceDisplay = billingCycle === "YEARLY" ? "$990.00" : "$99.00";
+  if (verificationSent) {
+    return (
+      <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row items-center justify-center p-8">
+        <div className="max-w-md w-full bg-white p-10 rounded-xl shadow-sm border border-slate-200 text-center">
+          <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-6">
+            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+          </div>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Check your email</h2>
+          <p className="text-gray-600 mb-8">
+            We've sent a verification link to <span className="font-semibold text-gray-900">{ownerEmail}</span>.
+            Please click the link to verify your business domain and activate your workspace.
+          </p>
+          
+          <div className="space-y-4">
+            <button
+              onClick={() => {
+                alert("Verification email re-sent!");
+              }}
+              className="w-full p-3 bg-white border border-gray-300 text-gray-700 rounded-md text-sm font-semibold hover:bg-gray-50 transition-colors"
+            >
+              Resend email
+            </button>
+            
+            <div className="pt-6 border-t border-gray-200 mt-6">
+              <p className="text-xs text-amber-600 mb-3 font-medium px-4 py-2 bg-amber-50 rounded">
+                Development Mode: Bypass email verification to continue testing.
+              </p>
+              <button
+                onClick={() => {
+                  window.location.href = "/";
+                }}
+                className="w-full p-3 bg-slate-900 text-white rounded-md text-sm font-semibold hover:bg-slate-800 transition-colors"
+              >
+                Proceed to Dashboard (Dev Bypass)
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-[#f0f4ff] flex flex-col font-sans py-8">
-      <header className="flex justify-between items-center px-8 pb-6 max-w-7xl mx-auto w-full">
-        <div className="text-xl font-bold text-gray-800">OfficeSync</div>
-        <nav className="space-x-6">
-          <Link
-            to="/"
-            className="text-gray-800 font-medium hover:text-blue-600"
-          >
-            Home
-          </Link>
-          <Link
-            to="/contact"
-            className="text-gray-800 font-medium hover:text-blue-600"
-          >
-            Contact
-          </Link>
-        </nav>
-      </header>
+    <div className="min-h-screen bg-slate-50 flex flex-col md:flex-row">
+      <aside className="hidden md:flex w-1/3 bg-blue-900 text-white p-12 flex-col justify-between">
+        <div>
+          <div className="flex items-center gap-2 mb-12">
+            <div className="w-8 h-8 bg-blue-500 rounded flex items-center justify-center font-bold text-white shadow-lg">
+              O
+            </div>
+            <span className="text-2xl font-bold tracking-tight">OptiFlow</span>
+          </div>
+          <h2 className="text-4xl font-bold mb-6 leading-tight">
+            Start your 14-day free trial.
+          </h2>
+          <p className="text-blue-200 text-lg mb-8 leading-relaxed">
+            No credit card required. Invite your team and experience seamless operations instantly.
+          </p>
+        </div>
+      </aside>
 
-      <main className="flex-1 flex justify-center items-center px-4">
-        <div className="bg-white p-10 rounded-xl shadow-[0_10px_25px_rgba(0,0,0,0.05)] w-full max-w-[600px] transition-all">
-          <div className="text-center mb-8">
-            <p className="uppercase text-xs text-blue-600 font-bold tracking-wider mb-2">
-              Step {step} of 2
-            </p>
-            <h1 className="text-2xl text-gray-900 font-bold">
-              {step === 1 ? "Register your company" : "Secure Payment"}
+      <main className="flex-1 flex items-center justify-center p-8 bg-white relative">
+        <div className="max-w-xl w-full relative z-10">
+          <div className="mb-8 text-center md:text-left">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              Create your workspace
             </h1>
+            <p className="text-gray-500">
+              Set up your environment and get started in seconds.
+            </p>
           </div>
 
           {error && (
-            <div className="mb-6 p-3 bg-red-50 text-red-700 border border-red-200 rounded text-sm text-center font-medium">
+            <div className="p-4 mb-6 bg-red-50 border-l-4 border-red-500 text-red-700 rounded text-sm">
               {error}
             </div>
           )}
 
-          {step === 1 && (
-            <form
-              className="space-y-5 animate-in fade-in zoom-in-95 duration-300"
-              onSubmit={handleContinueToPayment}
-            >
-              <div>
+          <form
+            className="space-y-5"
+            onSubmit={handleRegister}
+          >
+            <div className="flex flex-col md:flex-row gap-5">
+              <div className="flex-1">
+                <label className="block text-sm font-semibold text-gray-900 mb-2">
+                  Workspace Name
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={companyLegalName}
+                  onChange={(e) => setCompanyLegalName(e.target.value)}
+                  placeholder="e.g. Acme Corp"
+                  className="w-full p-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600 transition-shadow"
+                />
+              </div>
+              <div className="flex-1">
                 <label className="block text-sm font-semibold text-gray-900 mb-2">
                   Your Full Name
                 </label>
@@ -157,260 +166,109 @@ export default function Register() {
                   required
                   value={ownerFullName}
                   onChange={(e) => setOwnerFullName(e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600"
-                />
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex-1">
-                  <label className="block text-sm font-semibold text-gray-900 mb-2">
-                    Work Email
-                  </label>
-                  <input
-                    type="email"
-                    required
-                    value={ownerEmail}
-                    onChange={(e) => setOwnerEmail(e.target.value)}
-                    placeholder="name@company.com"
-                    className="w-full p-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600"
-                  />
-                </div>
-                <div className="flex-1">
-                  <label className="block text-sm font-semibold text-gray-900 mb-2">
-                    Company Legal Name
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={companyLegalName}
-                    onChange={(e) => setCompanyLegalName(e.target.value)}
-                    className="w-full p-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600"
-                  />
-                </div>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex-1">
-                  <label className="block text-sm font-semibold text-gray-900 mb-2">
-                    Subscription Plan
-                  </label>
-                  <select
-                    value={planId}
-                    onChange={(e) => setPlanId(e.target.value)}
-                    disabled={loadingPlans}
-                    className="w-full p-3 border border-gray-300 rounded-md text-sm bg-white focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600"
-                  >
-                    {loadingPlans ? (
-                      <option>Loading plans...</option>
-                    ) : (
-                      availablePlans.map((plan) => (
-                        <option key={plan.id} value={plan.id}>
-                          {plan.name}
-                        </option>
-                      ))
-                    )}
-                  </select>
-                </div>
-                <div className="flex-1">
-                  <label className="block text-sm font-semibold text-gray-900 mb-2">
-                    Billing Cycle
-                  </label>
-                  <select
-                    value={billingCycle}
-                    onChange={(e) => setBillingCycle(e.target.value)}
-                    className="w-full p-3 border border-gray-300 rounded-md text-sm bg-white focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600"
-                  >
-                    <option value="MONTHLY">Monthly</option>
-                    <option value="YEARLY">Yearly (Save 20%)</option>
-                  </select>
-                </div>
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex-1">
-                  <label className="block text-sm font-semibold text-gray-900 mb-2">
-                    Password
-                  </label>
-                  <input
-                    type="password"
-                    required
-                    minLength="8"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full p-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600"
-                  />
-                </div>
-                <div className="flex-1">
-                  <label className="block text-sm font-semibold text-gray-900 mb-2">
-                    Confirm Password
-                  </label>
-                  <input
-                    type="password"
-                    required
-                    minLength="8"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full p-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600"
-                  />
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={loadingPlans}
-                className="w-full p-3.5 mt-6 bg-blue-600 text-white rounded-md text-base font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50"
-              >
-                Continue to Payment &rarr;
-              </button>
-            </form>
-          )}
-
-          {step === 2 && (
-            <form
-              className="space-y-5 animate-in slide-in-from-right-8 duration-300"
-              onSubmit={handleProcessPayment}
-            >
-              <div className="p-5 bg-slate-50 border border-slate-200 rounded-lg mb-6 flex justify-between items-center shadow-inner">
-                <div>
-                  <p className="text-sm text-slate-500 font-medium mb-1">
-                    Total due today
-                  </p>
-                  <p className="text-3xl font-bold text-slate-900">
-                    {priceDisplay}
-                  </p>
-                </div>
-                <div className="flex gap-2">
-                  <div className="w-12 h-8 bg-white border border-slate-200 rounded flex items-center justify-center shadow-sm">
-                    <span className="text-[10px] font-bold text-blue-800 italic">
-                      VISA
-                    </span>
-                  </div>
-                  <div className="w-12 h-8 bg-white border border-slate-200 rounded flex items-center justify-center shadow-sm">
-                    <span className="text-[10px] font-bold text-red-500">
-                      MC
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-900 mb-2">
-                  Name on Card
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={cardName}
-                  onChange={(e) => setCardName(e.target.value)}
                   placeholder="John Doe"
-                  className="w-full p-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600"
+                  className="w-full p-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600 transition-shadow"
                 />
               </div>
+            </div>
 
-              <div>
+            <div>
+              <label className="block text-sm font-semibold text-gray-900 mb-2">
+                Work Email
+              </label>
+              <input
+                type="email"
+                required
+                value={ownerEmail}
+                onChange={(e) => setOwnerEmail(e.target.value)}
+                placeholder="john@example.com"
+                className="w-full p-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600 transition-shadow"
+              />
+            </div>
+
+            <div className="flex flex-col md:flex-row gap-5">
+              <div className="flex-1">
                 <label className="block text-sm font-semibold text-gray-900 mb-2">
-                  Card Number
+                  Company Size
                 </label>
+                <select
+                  value={companySize}
+                  onChange={(e) => setCompanySize(e.target.value)}
+                  className="w-full p-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600 bg-white"
+                >
+                  <option value="" disabled>Select size...</option>
+                  <option value="1-10">1-10 employees</option>
+                  <option value="11-50">11-50 employees</option>
+                  <option value="51-250">51-250 employees</option>
+                  <option value="250+">250+ employees</option>
+                </select>
+              </div>
+              <div className="flex-1">
+                <label className="block text-sm font-semibold text-gray-900 mb-2">
+                  Industry
+                </label>
+                <select
+                  value={industry}
+                  onChange={(e) => setIndustry(e.target.value)}
+                  className="w-full p-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600 bg-white"
+                >
+                  <option value="" disabled>Select industry...</option>
+                  <option value="Software & Technology">Software & Technology</option>
+                  <option value="Healthcare & Medical">Healthcare & Medical</option>
+                  <option value="Financial Services">Financial Services</option>
+                  <option value="Manufacturing & Logistics">Manufacturing & Logistics</option>
+                  <option value="Professional Services">Professional Services (Legal, Consulting)</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-900 mb-2">
+                Password
+              </label>
+              <div className="relative">
                 <input
-                  type="text"
+                  type={showPassword ? "text" : "password"}
                   required
-                  value={cardNumber}
-                  onChange={(e) => setCardNumber(e.target.value)}
-                  placeholder="0000 0000 0000 0000"
-                  maxLength="19"
-                  className="w-full p-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600 font-mono tracking-widest"
+                  minLength="8"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="At least 8 characters"
+                  className="w-full p-3 pr-10 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600"
                 />
-              </div>
-
-              <div className="flex gap-4">
-                <div className="flex-1">
-                  <label className="block text-sm font-semibold text-gray-900 mb-2">
-                    Expiry
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={cardExpiry}
-                    onChange={(e) => setCardExpiry(e.target.value)}
-                    placeholder="MM/YY"
-                    maxLength="5"
-                    className="w-full p-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600 text-center"
-                  />
-                </div>
-                <div className="flex-1">
-                  <label className="block text-sm font-semibold text-gray-900 mb-2">
-                    CVC
-                  </label>
-                  <input
-                    type="password"
-                    required
-                    value={cardCvc}
-                    onChange={(e) => setCardCvc(e.target.value)}
-                    placeholder="123"
-                    maxLength="4"
-                    className="w-full p-3 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-600 focus:border-blue-600 text-center tracking-widest"
-                  />
-                </div>
-              </div>
-
-              <div className="flex gap-4 mt-8">
                 <button
                   type="button"
-                  onClick={() => setStep(1)}
-                  disabled={isProcessingPayment}
-                  className="w-1/3 p-3.5 bg-slate-100 text-slate-700 rounded-md text-base font-semibold hover:bg-slate-200 transition-colors disabled:opacity-50"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
                 >
-                  &larr; Back
-                </button>
-                <button
-                  type="submit"
-                  disabled={isProcessingPayment}
-                  className="w-2/3 p-3.5 bg-green-600 text-white rounded-md text-base font-semibold hover:bg-green-700 transition-colors flex justify-center items-center gap-2 disabled:opacity-50"
-                >
-                  {isProcessingPayment ? (
-                    <>
-                      <svg
-                        className="animate-spin -ml-1 mr-2 h-5 w-5 text-white"
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                      >
-                        <circle
-                          className="opacity-25"
-                          cx="12"
-                          cy="12"
-                          r="10"
-                          stroke="currentColor"
-                          strokeWidth="4"
-                        ></circle>
-                        <path
-                          className="opacity-75"
-                          fill="currentColor"
-                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                        ></path>
-                      </svg>
-                      Processing...
-                    </>
+                  {showPassword ? (
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
                   ) : (
-                    "Pay & Register"
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                   )}
                 </button>
               </div>
-            </form>
-          )}
-
-          {/* Footer Link */}
-          {step === 1 && (
-            <div className="text-center mt-6 text-sm text-gray-500">
-              Already have an account?{" "}
-              <Link
-                to={PATHS.PUBLIC.LOGIN}
-                className="text-blue-600 font-semibold hover:underline"
-              >
-                Sign in instead
-              </Link>
             </div>
-          )}
+
+            <button
+              type="submit"
+              disabled={isProcessing}
+              className="w-full p-3.5 mt-6 bg-blue-600 text-white rounded-md text-base font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50"
+            >
+              {isProcessing ? "Creating Workspace..." : "Start 14-Day Free Trial"}
+            </button>
+          </form>
+
+          <div className="text-center mt-6 text-sm text-gray-500">
+            Already have an account?{" "}
+            <Link
+              to={PATHS.PUBLIC.LOGIN}
+              className="text-blue-600 font-semibold hover:underline"
+            >
+              Sign in instead
+            </Link>
+          </div>
         </div>
       </main>
     </div>
