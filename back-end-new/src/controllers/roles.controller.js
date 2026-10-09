@@ -3,7 +3,7 @@ import { requireRoles } from '../middleware/authorize.js';
 import { NotFoundError, BadRequestError, ForbiddenError, ValidationError } from '../utils/errors.js';
 import { validateRequired, validateEmail } from '../utils/validation.js';
 import { ROLES, normalizeRole } from '../utils/roles.js';
-import { createAuditLog, AUDIT_ACTIONS } from '../utils/audit.js';
+import { createSystemAuditLog, createProcessAuditLog, createComplianceAuditLog, AUDIT_ACTIONS } from '../utils/audit.js';
 
 export async function listRoles(req, res, next) {
   try {

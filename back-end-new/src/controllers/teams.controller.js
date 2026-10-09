@@ -4,7 +4,7 @@ import { NotFoundError, BadRequestError, ForbiddenError, ValidationError } from 
 import { resolveEffectiveBranchId, isBranchManager, assertBranchManagerScope } from '../utils/tenantScope.js';
 import { validateRequired, validateEmail } from '../utils/validation.js';
 import { ROLES, normalizeRole } from '../utils/roles.js';
-import { createAuditLog, AUDIT_ACTIONS } from '../utils/audit.js';
+import { createSystemAuditLog, createProcessAuditLog, createComplianceAuditLog, AUDIT_ACTIONS } from '../utils/audit.js';
 
 export async function listTeams(req, res, next) {
   try {
@@ -107,10 +107,8 @@ export async function createTeam(req, res, next) {
 
     // Record audit log
     try {
-      await createAuditLog({
-        companyId: req.user.companyId,
-        entityType: 'Team',
-        entityId: team.id,
+      await createSystemAuditLog({companyId: req.user.companyId,
+        teamId: team.id,
         action: AUDIT_ACTIONS.CREATE,
         performedById: req.user.id,
         newValue: { name: team.name, branchId },
@@ -177,10 +175,8 @@ export async function updateTeam(req, res, next) {
 
     // Record audit log
     try {
-      await createAuditLog({
-        companyId: req.user.companyId,
-        entityType: 'Team',
-        entityId: id,
+      await createSystemAuditLog({companyId: req.user.companyId,
+        teamId: id,
         action: AUDIT_ACTIONS.UPDATE,
         performedById: req.user.id,
         oldValue: { name: existing.name, branchId: existing.branchId },
@@ -230,10 +226,8 @@ export async function deleteTeam(req, res, next) {
 
     // Record audit log
     try {
-      await createAuditLog({
-        companyId: req.user.companyId,
-        entityType: 'Team',
-        entityId: id,
+      await createSystemAuditLog({companyId: req.user.companyId,
+        teamId: id,
         action: AUDIT_ACTIONS.DELETE,
         performedById: req.user.id,
         oldValue: { name: existing.name },

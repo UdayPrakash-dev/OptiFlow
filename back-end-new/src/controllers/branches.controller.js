@@ -4,7 +4,7 @@ import { NotFoundError, BadRequestError, ForbiddenError, ValidationError } from 
 import { resolveEffectiveBranchId, isBranchManager, assertBranchManagerScope } from '../utils/tenantScope.js';
 import { validateRequired, validateEmail } from '../utils/validation.js';
 import { ROLES, normalizeRole } from '../utils/roles.js';
-import { createAuditLog, AUDIT_ACTIONS } from '../utils/audit.js';
+import { createSystemAuditLog, createProcessAuditLog, createComplianceAuditLog, AUDIT_ACTIONS } from '../utils/audit.js';
 
 export async function listBranches(req, res, next) {
   try {
@@ -90,10 +90,8 @@ export async function createBranch(req, res, next) {
 
     // Record audit log
     try {
-      await createAuditLog({
-        companyId: req.user.companyId,
-        entityType: 'Branch',
-        entityId: branch.id,
+      await createSystemAuditLog({companyId: req.user.companyId,
+        branchId: branch.id,
         action: AUDIT_ACTIONS.CREATE,
         performedById: req.user.id,
         newValue: { name: branch.name },
@@ -135,10 +133,8 @@ export async function updateBranch(req, res, next) {
 
     // Record audit log
     try {
-      await createAuditLog({
-        companyId: req.user.companyId,
-        entityType: 'Branch',
-        entityId: id,
+      await createSystemAuditLog({companyId: req.user.companyId,
+        branchId: id,
         action: AUDIT_ACTIONS.UPDATE,
         performedById: req.user.id,
         oldValue: { name: existing.name },
@@ -184,10 +180,8 @@ export async function deleteBranch(req, res, next) {
 
     // Record audit log
     try {
-      await createAuditLog({
-        companyId: req.user.companyId,
-        entityType: 'Branch',
-        entityId: id,
+      await createSystemAuditLog({companyId: req.user.companyId,
+        branchId: id,
         action: AUDIT_ACTIONS.DELETE,
         performedById: req.user.id,
         oldValue: { name: existing.name },

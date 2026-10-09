@@ -12,7 +12,7 @@ import {
 } from "../utils/errors.js";
 import { validateRequired, validateEnum } from "../utils/validation.js";
 import { ROLES, normalizeRole } from "../utils/roles.js";
-import { createAuditLog, AUDIT_ACTIONS } from "../utils/audit.js";
+import { createComplianceAuditLog, AUDIT_ACTIONS } from "../utils/audit.js";
 
 const ALLOWED_MIME_TYPES = [
   "application/pdf",
@@ -177,10 +177,10 @@ export async function createComplianceRule(req, res, next) {
     });
 
     try {
-      await createAuditLog({
+      await createComplianceAuditLog({
         companyId: req.user.companyId,
-        entityType: "ComplianceRule",
-        entityId: newRule.id,
+        
+        ruleId: newRule.id,
         action: AUDIT_ACTIONS.CREATE,
         performedById: req.user.id,
         newValue: { name: newRule.name, severity: newRule.severity },
@@ -241,10 +241,10 @@ export async function updateComplianceRule(req, res, next) {
     });
 
     try {
-      await createAuditLog({
+      await createComplianceAuditLog({
         companyId: req.user.companyId,
-        entityType: "ComplianceRule",
-        entityId: id,
+        
+        ruleId: id,
         action: AUDIT_ACTIONS.UPDATE,
         performedById: req.user.id,
         oldValue: { name: existing.name, severity: existing.severity },
@@ -286,10 +286,10 @@ export async function deleteComplianceRule(req, res, next) {
     });
 
     try {
-      await createAuditLog({
+      await createComplianceAuditLog({
         companyId: req.user.companyId,
-        entityType: "ComplianceRule",
-        entityId: id,
+        
+        ruleId: id,
         action: AUDIT_ACTIONS.DELETE,
         performedById: req.user.id,
         oldValue: { name: existing.name },

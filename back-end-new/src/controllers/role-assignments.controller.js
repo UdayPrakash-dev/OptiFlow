@@ -3,7 +3,7 @@ import { requireRoles } from '../middleware/authorize.js';
 import { NotFoundError, BadRequestError, ForbiddenError, ValidationError } from '../utils/errors.js';
 import { validateRequired, validateEmail } from '../utils/validation.js';
 import { ROLES, normalizeRole } from '../utils/roles.js';
-import { createAuditLog, AUDIT_ACTIONS } from '../utils/audit.js';
+import { createSystemAuditLog, createProcessAuditLog, createComplianceAuditLog, AUDIT_ACTIONS } from '../utils/audit.js';
 
 export async function listRoleAssignments(req, res, next) {
   try {
@@ -77,10 +77,7 @@ export async function createRoleAssignment(req, res, next) {
 
     // Record audit log
     try {
-      await createAuditLog({
-        companyId: req.user.companyId,
-        entityType: 'RoleAssignment',
-        entityId: assignment.id,
+      await createSystemAuditLog({companyId: req.user.companyId,
         action: AUDIT_ACTIONS.ROLE_ASSIGNED,
         performedById: req.user.id,
         newValue: { userId, roleId: role.id, roleLabel: role.label },
@@ -116,10 +113,7 @@ export async function deleteRoleAssignment(req, res, next) {
 
     // Record audit log
     try {
-      await createAuditLog({
-        companyId: req.user.companyId,
-        entityType: 'RoleAssignment',
-        entityId: id,
+      await createSystemAuditLog({companyId: req.user.companyId,
         action: AUDIT_ACTIONS.ROLE_REVOKED,
         performedById: req.user.id,
         oldValue: { userId: assignment.userId, roleLabel: assignment.role?.label },

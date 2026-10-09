@@ -12,7 +12,7 @@ import {
   validateEmail,
 } from '../utils/validation.js';
 import { hasRole, normalizeRole, ROLES } from '../utils/roles.js';
-import { createAuditLog, AUDIT_ACTIONS } from '../utils/audit.js';
+import { createSystemAuditLog, createProcessAuditLog, createComplianceAuditLog, AUDIT_ACTIONS } from '../utils/audit.js';
 
 
 const USER_SELECT_FIELDS = {
@@ -258,10 +258,8 @@ export async function createUser(req, res, next) {
 
     // Record audit log
     try {
-      await createAuditLog({
-        companyId: req.user.companyId,
-        entityType: 'User',
-        entityId: newUser.id,
+      await createSystemAuditLog({companyId: req.user.companyId,
+        targetUserId: newUser.id,
         action: AUDIT_ACTIONS.CREATE,
         performedById: req.user.id,
         newValue: { fullName: newUser.fullName, email: newUser.email, role: targetRole?.label },
@@ -417,10 +415,8 @@ export async function updateUser(req, res, next) {
 
     // Record audit log
     try {
-      await createAuditLog({
-        companyId: req.user.companyId,
-        entityType: 'User',
-        entityId: id,
+      await createSystemAuditLog({companyId: req.user.companyId,
+        targetUserId: id,
         action: AUDIT_ACTIONS.UPDATE,
         performedById: req.user.id,
         newValue: { fieldsUpdated: Object.keys(updateData), role: targetRole?.label },
@@ -469,10 +465,8 @@ export async function deactivateUser(req, res, next) {
 
     // Record audit log
     try {
-      await createAuditLog({
-        companyId: req.user.companyId,
-        entityType: 'User',
-        entityId: id,
+      await createSystemAuditLog({companyId: req.user.companyId,
+        targetUserId: id,
         action: AUDIT_ACTIONS.STATUS_CHANGE,
         performedById: req.user.id,
         newValue: { isActive: false, deactivatedAt: new Date().toISOString() },

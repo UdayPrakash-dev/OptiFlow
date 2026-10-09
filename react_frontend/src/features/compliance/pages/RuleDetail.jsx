@@ -83,6 +83,18 @@ const RuleDetail = () => {
                   </Badge>
                 </dd>
               </div>
+              <div className="sm:col-span-2">
+                <dt className="text-sm font-medium text-gray-500">Engine Evaluation Criteria (JSON)</dt>
+                <dd className="mt-1 text-sm text-gray-900 bg-gray-50 p-4 rounded-md border border-gray-200 overflow-auto max-h-48 font-mono">
+                  {rule.criteria ? JSON.stringify(rule.criteria, null, 2) : "No machine-readable criteria defined."}
+                </dd>
+              </div>
+              <div className="sm:col-span-2">
+                <dt className="text-sm font-medium text-gray-500">Action on Fail</dt>
+                <dd className="mt-1 text-sm font-medium text-red-600">
+                  {rule.actionOnFail || "BLOCK_TRANSITION"}
+                </dd>
+              </div>
             </dl>
           </div>
         );
@@ -139,7 +151,7 @@ const RuleDetail = () => {
                         onClick={() => setSelectedViolation(row)}
                         disabled={row.status === 'Resolved'}
                       >
-                        {row.status === 'Resolved' ? 'Resolved' : 'Resolve'}
+                        {row.status === 'Resolved' ? 'Resolved' : 'Manual Override'}
                       </Button>
                     ) 
                   }

@@ -45,7 +45,7 @@ export function ResolveViolationModal({
         setError(null);
         onClose();
       }}
-      title="Resolve Compliance Violation"
+      title="Manual Override: Force Resolve"
       footer={
         <>
           <Button variant="secondary" onClick={onClose} disabled={isSubmitting}>Cancel</Button>
@@ -54,7 +54,7 @@ export function ResolveViolationModal({
             onClick={handleSubmit}
             disabled={isSubmitting || resolutionNotes.trim().length < 5}
           >
-            {isSubmitting ? 'Resolving...' : 'Mark Resolved'}
+            {isSubmitting ? 'Resolving...' : 'Force Resolve'}
           </Button>
         </>
       }
@@ -65,7 +65,7 @@ export function ResolveViolationModal({
         </div>
       )}
       <div className="mb-4 text-[13px] text-blue-800 bg-blue-50 p-3 rounded-lg border border-blue-200">
-        Please provide details on how this violation was addressed or mitigated. This will be permanently logged for audit purposes.
+        WARNING: You are manually bypassing the evidence workflow. Please provide explicit justification. This will be permanently logged for audit purposes.
       </div>
       <div className="flex flex-col gap-2">
         <label className="text-sm font-semibold text-slate-700">Resolution Notes *</label>

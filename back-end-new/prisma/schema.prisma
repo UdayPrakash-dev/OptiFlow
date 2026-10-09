@@ -98,8 +98,8 @@ model PlatformSupportAccess {
 model Company {
   id        String        @id @default(uuid())
   legalName String
-  size      String?       // PLG: e.g. "1-10", "11-50", etc.
-  industry  String?       // PLG: e.g. "IT", "HR", etc.
+  size      String? // PLG: e.g. "1-10", "11-50", etc.
+  industry  String? // PLG: e.g. "IT", "HR", etc.
   status    CompanyStatus @default(Active)
   createdAt DateTime      @default(now())
 
@@ -155,7 +155,6 @@ model User {
   roleAssignments           RoleAssignment[]      @relation("AssignmentUser")
   grantedAssignments        RoleAssignment[]      @relation("AssignmentGrantedBy")
   attachments               Attachment[]
-  auditLogs                 AuditLog[]            @relation("PerformedBy")
   createdTasks              Task[]                @relation("TaskCreatedBy")
   assignedTasks             Task[]                @relation("TaskAssignedTo")
   reportedViolations        ComplianceViolation[] @relation("ViolationReportedBy")
@@ -168,6 +167,11 @@ model User {
   evidenceReviewed          ComplianceEvidence[]  @relation("EvidenceReviewedBy")
   ownedComplianceCategories ComplianceCategory[]  @relation("ComplianceCategoryOwner")
   notifications             Notification[]
+  complianceAuditLogs       ComplianceAuditLog[]
+
+  systemAuditLogsTargeted   SystemAuditLog[]  @relation("SystemAuditTargetUser")
+  systemAuditLogsPerformed  SystemAuditLog[]  @relation("SystemPerformedBy")
+  processAuditLogsPerformed ProcessAuditLog[] @relation("ProcessPerformedBy")
 
   @@unique([companyId, email])
   @@index([companyId])
@@ -232,6 +236,8 @@ model Role {
 
   updatedAt DateTime @updatedAt
 
+  systemAuditLogs SystemAuditLog[]
+
   @@index([companyId])
   @@map("roles")
 }
@@ -288,6 +294,8 @@ model Branch {
 
   teams Team[]
 
+  systemAuditLogs SystemAuditLog[]
+
   @@unique([companyId, name])
   @@index([companyId])
   @@map("branches")
@@ -304,6 +312,8 @@ model Team {
 
   projects    Project[]
   teamMembers TeamMember[]
+
+  systemAuditLogs SystemAuditLog[]
 
   @@unique([branchId, name])
   @@index([branchId])
@@ -348,6 +358,8 @@ model Project {
 
   createdById String
 
+  processAuditLogs ProcessAuditLog[]
+
   @@index([teamId])
   @@map("projects")
 }
@@ -386,6 +398,8 @@ model Task {
   subtasks           Subtask[]
   escalations        Escalation[]
   complianceEvidence ComplianceEvidence[]
+
+  processAuditLogs ProcessAuditLog[]
 
   @@index([companyId])
   @@index([projectId])
@@ -446,6 +460,8 @@ model ProcessTemplate {
 
   steps     ProcessTemplateStep[]
   instances ProcessInstance[]
+
+  processAuditLogs ProcessAuditLog[]
 
   @@unique([companyId, name, version])
   @@index([companyId])
@@ -576,10 +592,17 @@ model ComplianceRule {
   sourceTemplate   ComplianceRule?  @relation("ClonedFrom", fields: [sourceTemplateId], references: [id])
   clonedRules      ComplianceRule[] @relation("ClonedFrom")
 
+  // The machine-readable evaluation criteria
+  criteria         Json?    
+  
+  // E.g., "BLOCK_TRANSITION", "ALLOW_WITH_WARNING"
+  actionOnFail     String           @default("BLOCK_TRANSITION") 
+
   bindings   ComplianceBinding[]
   violations ComplianceViolation[]
 
-  updatedAt DateTime @updatedAt
+  updatedAt           DateTime             @updatedAt
+  complianceAuditLogs ComplianceAuditLog[]
 
   @@index([companyId])
   @@index([categoryId])
@@ -628,7 +651,8 @@ model ComplianceViolation {
 
   evidence ComplianceEvidence[]
 
-  updatedAt DateTime @updatedAt
+  updatedAt           DateTime             @updatedAt
+  complianceAuditLogs ComplianceAuditLog[]
 
   @@index([companyId])
   @@index([entityType, entityId])
@@ -695,7 +719,8 @@ model ComplianceEvidence {
   submittedAt  DateTime             @default(now())
   reviewedAt   DateTime?
 
-  updatedAt DateTime @updatedAt
+  updatedAt           DateTime             @updatedAt
+  complianceAuditLogs ComplianceAuditLog[]
 
   @@index([companyId])
   @@index([taskId])
@@ -734,26 +759,6 @@ model Attachment {
   @@map("file_objects")
 }
 
-model AuditLog {
-  id            String      @id @default(uuid())
-  companyId     String
-  entityType    String      @map("resourceType")
-  entityId      String      @map("resourceId")
-  action        AuditAction
-  performedById String?     @map("actorId")
-  performedBy   User?       @relation("PerformedBy", fields: [performedById], references: [id])
-  performedAt   DateTime    @default(now()) @map("occurredAt")
-  ipAddress     String?
-  userAgent     String?
-  oldValue      Json?       @map("before")
-  newValue      Json?       @map("after")
-
-  @@index([companyId])
-  @@index([entityType, entityId])
-  @@index([performedById])
-  @@map("audit_logs")
-}
-
 enum AuditAction {
   CREATE
   UPDATE
@@ -789,4 +794,88 @@ model Notification {
 
   @@index([userId])
   @@map("notifications")
+}
+
+model ComplianceAuditLog {
+  id        String @id @default(uuid())
+  companyId String
+
+  ruleId String?
+  rule   ComplianceRule? @relation(fields: [ruleId], references: [id])
+
+  violationId String?
+  violation   ComplianceViolation? @relation(fields: [violationId], references: [id])
+
+  evidenceId String?
+  evidence   ComplianceEvidence? @relation(fields: [evidenceId], references: [id])
+
+  action        AuditAction
+  performedById String?
+  performedBy   User?       @relation(fields: [performedById], references: [id])
+  performedAt   DateTime    @default(now())
+
+  oldValue Json?
+  newValue Json?
+
+  @@index([companyId])
+  @@index([ruleId])
+  @@index([violationId])
+  @@index([evidenceId])
+}
+
+model SystemAuditLog {
+  id        String @id @default(uuid())
+  companyId String
+
+  targetUserId String?
+  targetUser   User?   @relation("SystemAuditTargetUser", fields: [targetUserId], references: [id])
+
+  roleId String?
+  role   Role?   @relation(fields: [roleId], references: [id])
+
+  teamId String?
+  team   Team?   @relation(fields: [teamId], references: [id])
+
+  branchId String?
+  branch   Branch? @relation(fields: [branchId], references: [id])
+
+  action        AuditAction
+  performedById String?
+  performedBy   User?       @relation("SystemPerformedBy", fields: [performedById], references: [id])
+  performedAt   DateTime    @default(now())
+
+  ipAddress String?
+  userAgent String?
+
+  oldValue Json?
+  newValue Json?
+
+  @@index([companyId])
+  @@index([targetUserId])
+}
+
+model ProcessAuditLog {
+  id        String @id @default(uuid())
+  companyId String
+
+  projectId String?
+  project   Project? @relation(fields: [projectId], references: [id])
+
+  taskId String?
+  task   Task?   @relation(fields: [taskId], references: [id])
+
+  templateId String?
+  template   ProcessTemplate? @relation(fields: [templateId], references: [id])
+
+  action        AuditAction
+  performedById String?
+  performedBy   User?       @relation("ProcessPerformedBy", fields: [performedById], references: [id])
+  performedAt   DateTime    @default(now())
+
+  oldValue Json?
+  newValue Json?
+
+  @@index([companyId])
+  @@index([projectId])
+  @@index([taskId])
 }

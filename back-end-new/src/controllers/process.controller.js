@@ -6,7 +6,7 @@ import {
 } from '../utils/errors.js';
 import { validateRequired, validateEnum, validateNumber } from '../utils/validation.js';
 import { ROLES } from '../utils/roles.js';
-import { createAuditLog, AUDIT_ACTIONS } from '../utils/audit.js';
+import { createSystemAuditLog, createProcessAuditLog, createComplianceAuditLog, AUDIT_ACTIONS } from '../utils/audit.js';
 
 
 const ALLOWED_STEP_TYPES = ['Approval', 'Input_Required', 'Automated_Task'];
@@ -149,10 +149,8 @@ export async function createTemplate(req, res, next) {
       },
     });
 
-    await createAuditLog({
-      companyId: req.user.companyId,
-      entityType: 'ProcessTemplate',
-      entityId: created.id,
+    await createProcessAuditLog({companyId: req.user.companyId,
+      templateId: created.id,
       action: AUDIT_ACTIONS.CREATE,
       performedById: req.user.id,
       newValue: { name: created.name, stepsCount: formattedSteps.length },
@@ -242,10 +240,8 @@ export async function updateTemplate(req, res, next) {
       });
     });
 
-    await createAuditLog({
-      companyId: req.user.companyId,
-      entityType: 'ProcessTemplate',
-      entityId: updated.id,
+    await createProcessAuditLog({companyId: req.user.companyId,
+      templateId: updated.id,
       action: AUDIT_ACTIONS.UPDATE,
       performedById: req.user.id,
       oldValue: { name: existing.name, isActive: existing.isActive },
@@ -282,10 +278,8 @@ export async function deleteTemplate(req, res, next) {
       where: { id: req.params.id },
     });
 
-    await createAuditLog({
-      companyId: req.user.companyId,
-      entityType: 'ProcessTemplate',
-      entityId: req.params.id,
+    await createProcessAuditLog({companyId: req.user.companyId,
+      templateId: req.params.id,
       action: AUDIT_ACTIONS.DELETE,
       performedById: req.user.id,
       oldValue: { name: existing.name },
@@ -560,10 +554,7 @@ export async function createInstance(req, res, next) {
       });
     });
 
-    await createAuditLog({
-      companyId: req.user.companyId,
-      entityType: 'ProcessInstance',
-      entityId: createdInstance.id,
+    await createSystemAuditLog({companyId: req.user.companyId,
       action: AUDIT_ACTIONS.CREATE,
       performedById: req.user.id,
       newValue: { templateId: template.id, status: createdInstance.status },
@@ -636,10 +627,7 @@ export async function updateInstance(req, res, next) {
       },
     });
 
-    await createAuditLog({
-      companyId: req.user.companyId,
-      entityType: 'ProcessInstance',
-      entityId: updated.id,
+    await createSystemAuditLog({companyId: req.user.companyId,
       action: AUDIT_ACTIONS.UPDATE,
       performedById: req.user.id,
       oldValue: { status: existing.status },
@@ -680,10 +668,7 @@ export async function deleteInstance(req, res, next) {
       where: { id: req.params.id },
     });
 
-    await createAuditLog({
-      companyId: req.user.companyId,
-      entityType: 'ProcessInstance',
-      entityId: req.params.id,
+    await createSystemAuditLog({companyId: req.user.companyId,
       action: AUDIT_ACTIONS.DELETE,
       performedById: req.user.id,
       oldValue: { status: existing.status },
@@ -963,10 +948,7 @@ export async function actionStep(req, res, next) {
       return updatedStep;
     });
 
-    await createAuditLog({
-      companyId: req.user.companyId,
-      entityType: 'ProcessInstanceStep',
-      entityId: result.id,
+    await createSystemAuditLog({companyId: req.user.companyId,
       action: AUDIT_ACTIONS.UPDATE,
       performedById: req.user.id,
       oldValue: { status: currentStep.status },

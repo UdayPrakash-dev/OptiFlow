@@ -6,7 +6,7 @@ import { requireRoles } from '../middleware/authorize.js';
 import { NotFoundError, BadRequestError, ForbiddenError, ValidationError } from '../utils/errors.js';
 import { validateRequired, validateEnum } from '../utils/validation.js';
 import { ROLES, normalizeRole } from '../utils/roles.js';
-import { createAuditLog, AUDIT_ACTIONS } from '../utils/audit.js';
+import { createSystemAuditLog, createProcessAuditLog, createComplianceAuditLog, AUDIT_ACTIONS } from '../utils/audit.js';
 
 export async function listComplianceBindings(req, res, next) {
   try {

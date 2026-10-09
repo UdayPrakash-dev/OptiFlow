@@ -5,7 +5,7 @@ import {
   ForbiddenError,
 } from '../utils/errors.js';
 import { validateRequired } from '../utils/validation.js';
-import { createAuditLog, AUDIT_ACTIONS } from '../utils/audit.js';
+import { createSystemAuditLog, createProcessAuditLog, createComplianceAuditLog, AUDIT_ACTIONS } from '../utils/audit.js';
 
 
 /**
@@ -105,10 +105,7 @@ export async function createAttachment(req, res, next) {
 
     // Record audit log
     try {
-      await createAuditLog({
-        companyId: req.user.companyId,
-        entityType: 'Attachment',
-        entityId: attachment.id,
+      await createSystemAuditLog({companyId: req.user.companyId,
         action: AUDIT_ACTIONS.CREATE,
         performedById: req.user.id,
         newValue: { fileName, entityType, entityId },
@@ -155,10 +152,7 @@ export async function deleteAttachment(req, res, next) {
 
     // Record audit log
     try {
-      await createAuditLog({
-        companyId: req.user.companyId,
-        entityType: 'Attachment',
-        entityId: id,
+      await createSystemAuditLog({companyId: req.user.companyId,
         action: AUDIT_ACTIONS.DELETE,
         performedById: req.user.id,
         oldValue: { fileName: attachment.fileName },

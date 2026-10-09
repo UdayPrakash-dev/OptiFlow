@@ -12,54 +12,41 @@ export const AUDIT_ACTIONS = {
 
 const VALID_ACTIONS = new Set(Object.values(AUDIT_ACTIONS));
 
-/**
- * Creates an immutable audit log entry in PostgreSQL using Prisma.
- * Strictly validates company context and schema enum values.
- * Throws on failure so callers can await and handle persistence errors explicitly.
- */
-export async function createAuditLog({
-  companyId,
-  entityType,
-  entityId,
-  action,
-  performedById = null,
-  oldValue = null,
-  newValue = null,
-  ipAddress = null,
-  userAgent = null,
-  usedPermissionSlug = null,
+export async function createComplianceAuditLog({
+  companyId, ruleId = null, violationId = null, evidenceId = null,
+  action, performedById = null, oldValue = null, newValue = null,
 }) {
-  if (!companyId || typeof companyId !== 'string' || companyId.trim() === '') {
-    throw new BadRequestError('Audit log creation failed: companyId is required');
-  }
-
-  if (!entityType || typeof entityType !== 'string' || entityType.trim() === '') {
-    throw new BadRequestError('Audit log creation failed: entityType is required');
-  }
-
-  if (entityId === undefined || entityId === null || String(entityId).trim() === '') {
-    throw new BadRequestError('Audit log creation failed: entityId is required');
-  }
-
+  if (!companyId) throw new BadRequestError('companyId is required');
   const normalizedAction = (typeof action === 'string' ? action.trim().toUpperCase() : '');
-  if (!VALID_ACTIONS.has(normalizedAction)) {
-    throw new BadRequestError(
-      `Audit log creation failed: action must be one of ${Array.from(VALID_ACTIONS).join(', ')}`
-    );
-  }
+  if (!VALID_ACTIONS.has(normalizedAction)) throw new BadRequestError(`Invalid action`);
 
-  return await prisma.auditLog.create({
-    data: {
-      companyId: companyId.trim(),
-      entityType: entityType.trim(),
-      entityId: String(entityId).trim(),
-      action: normalizedAction,
-      performedById: performedById ? String(performedById).trim() : null,
-      oldValue: oldValue ?? undefined,
-      newValue: newValue ?? undefined,
-      ipAddress: ipAddress ? String(ipAddress).trim() : null,
-      userAgent: userAgent ? String(userAgent).trim() : null,
-    },
+  return await prisma.complianceAuditLog.create({
+    data: { companyId: companyId.trim(), ruleId, violationId, evidenceId, action: normalizedAction, performedById, oldValue, newValue },
   });
 }
 
+export async function createSystemAuditLog({
+  companyId, targetUserId = null, roleId = null, teamId = null, branchId = null,
+  action, performedById = null, oldValue = null, newValue = null, ipAddress = null, userAgent = null,
+}) {
+  if (!companyId) throw new BadRequestError('companyId is required');
+  const normalizedAction = (typeof action === 'string' ? action.trim().toUpperCase() : '');
+  if (!VALID_ACTIONS.has(normalizedAction)) throw new BadRequestError(`Invalid action`);
+
+  return await prisma.systemAuditLog.create({
+    data: { companyId: companyId.trim(), targetUserId, roleId, teamId, branchId, action: normalizedAction, performedById, oldValue, newValue, ipAddress, userAgent },
+  });
+}
+
+export async function createProcessAuditLog({
+  companyId, projectId = null, taskId = null, templateId = null,
+  action, performedById = null, oldValue = null, newValue = null,
+}) {
+  if (!companyId) throw new BadRequestError('companyId is required');
+  const normalizedAction = (typeof action === 'string' ? action.trim().toUpperCase() : '');
+  if (!VALID_ACTIONS.has(normalizedAction)) throw new BadRequestError(`Invalid action`);
+
+  return await prisma.processAuditLog.create({
+    data: { companyId: companyId.trim(), projectId, taskId, templateId, action: normalizedAction, performedById, oldValue, newValue },
+  });
+}

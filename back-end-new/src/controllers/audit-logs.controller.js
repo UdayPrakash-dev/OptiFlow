@@ -3,28 +3,54 @@ import { requireRoles } from '../middleware/authorize.js';
 import { NotFoundError, BadRequestError, ForbiddenError, ValidationError } from '../utils/errors.js';
 import { validateRequired, validateEmail } from '../utils/validation.js';
 import { ROLES, normalizeRole } from '../utils/roles.js';
-import { createAuditLog, AUDIT_ACTIONS } from '../utils/audit.js';
+import { createComplianceAuditLog, AUDIT_ACTIONS } from '../utils/audit.js';
 
 export async function listAuditLogs(req, res, next) {
   try {
-    const { entityType, entityId } = req.query;
-
-    const logs = await prisma.auditLog.findMany({
+    const logs = await prisma.complianceAuditLog.findMany({
       where: {
         companyId: req.user.companyId,
-        ...(entityType ? { entityType: String(entityType) } : {}),
-        ...(entityId ? { entityId: String(entityId) } : {}),
       },
       include: {
         performedBy: { select: { id: true, fullName: true, email: true } },
+        rule: { select: { name: true } },
+        violation: { select: { rule: { select: { name: true } } } },
+        evidence: { select: { title: true } }
       },
       orderBy: { performedAt: 'desc' },
       take: 100,
     });
 
+    const hydratedLogs = logs.map(log => {
+      let entityName = "Unknown Entity";
+      let entityType = "Unknown";
+      let entityId = null;
+
+      if (log.ruleId) {
+        entityType = "ComplianceRule";
+        entityId = log.ruleId;
+        entityName = log.rule?.name || `Rule #${log.ruleId.substring(0,8)}`;
+      } else if (log.violationId) {
+        entityType = "ComplianceViolation";
+        entityId = log.violationId;
+        entityName = log.violation?.rule?.name ? `Violation: ${log.violation.rule.name}` : `Violation #${log.violationId.substring(0,8)}`;
+      } else if (log.evidenceId) {
+        entityType = "ComplianceEvidence";
+        entityId = log.evidenceId;
+        entityName = log.evidence?.title || `Evidence #${log.evidenceId.substring(0,8)}`;
+      }
+
+      return {
+        ...log,
+        entityType,
+        entityId,
+        entityName,
+      };
+    });
+
     res.status(200).json({
       success: true,
-      data: logs,
+      data: hydratedLogs,
     });
   } catch (err) {
     next(err);
@@ -89,14 +115,22 @@ export async function createAuditLogEndpoint(req, res, next) {
       ? action.toUpperCase()
       : AUDIT_ACTIONS.UPDATE;
 
-    const created = await createAuditLog({
+    let ruleId = null;
+    let violationId = null;
+    let evidenceId = null;
+
+    if (entityType === 'ComplianceRule') ruleId = entityId;
+    else if (entityType === 'ComplianceViolation') violationId = entityId;
+    else if (entityType === 'ComplianceEvidence') evidenceId = entityId;
+    else throw new BadRequestError('Invalid compliance entity type');
+
+    const created = await createComplianceAuditLog({
       companyId: req.user.companyId,
-      entityType: String(entityType),
-      entityId: String(entityId),
+      ruleId,
+      violationId,
+      evidenceId,
       action: validAction,
       performedById: req.user.id,
-      ipAddress: req.ip || req.socket?.remoteAddress || '127.0.0.1',
-      userAgent: req.headers['user-agent'] || null,
       oldValue: oldValue ?? null,
       newValue: newValue ?? null,
     });

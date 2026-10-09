@@ -15,7 +15,7 @@ import {
   validateEmail,
   validateEnum,
 } from '../utils/validation.js';
-import { createAuditLog, AUDIT_ACTIONS } from '../utils/audit.js';
+import { createSystemAuditLog, createProcessAuditLog, createComplianceAuditLog, AUDIT_ACTIONS } from '../utils/audit.js';
 
 
 /**
@@ -184,10 +184,8 @@ export async function handleLogin(req, res, next) {
 
     // Audit login operation
     try {
-      await createAuditLog({
-        companyId: user.companyId,
-        entityType: 'User',
-        entityId: user.id,
+      await createSystemAuditLog({companyId: user.companyId,
+        targetUserId: user.id,
         action: AUDIT_ACTIONS.LOGIN,
         performedById: user.id,
         ipAddress: req.ip || req.socket?.remoteAddress || '127.0.0.1',
@@ -389,10 +387,7 @@ export async function handleRegisterCompany(req, res, next) {
 
     // Audit company registration
     try {
-      await createAuditLog({
-        companyId: result.company.id,
-        entityType: 'Company',
-        entityId: result.company.id,
+      await createSystemAuditLog({companyId: result.company.id,
         action: AUDIT_ACTIONS.CREATE,
         performedById: result.user.id,
         newValue: { message: `Company registered: ${result.company.legalName}` },

@@ -7,7 +7,7 @@ import { requireRoles } from '../middleware/authorize.js';
 import { NotFoundError, BadRequestError, ForbiddenError, ValidationError } from '../utils/errors.js';
 import { validateRequired, validateEnum } from '../utils/validation.js';
 import { ROLES, normalizeRole } from '../utils/roles.js';
-import { createAuditLog, AUDIT_ACTIONS } from '../utils/audit.js';
+import { createComplianceAuditLog, AUDIT_ACTIONS } from '../utils/audit.js';
 
 const ALLOWED_MIME_TYPES = ['application/pdf', 'image/png', 'image/jpeg', 'image/jpg', 'text/csv', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'];
 const ALLOWED_SEVERITIES = ['Low', 'Medium', 'High', 'Critical'];
@@ -108,10 +108,10 @@ export async function createEvidence(req, res, next) {
     });
 
     try {
-      await createAuditLog({
+      await createComplianceAuditLog({
         companyId: req.user.companyId,
-        entityType: 'ComplianceEvidence',
-        entityId: newEvidence.id,
+        
+        evidenceId: newEvidence.id,
         action: AUDIT_ACTIONS.CREATE,
         performedById: req.user.id,
         newValue: { title, status: 'Pending' },
@@ -168,13 +168,26 @@ export async function updateEvidence(req, res, next) {
           resolutionRemarks: `Auto-resolved via approved evidence "${existing.title}"`,
         },
       });
+
+      try {
+        await createComplianceAuditLog({
+          companyId: req.user.companyId,
+          violationId: existing.violationId,
+          action: AUDIT_ACTIONS.STATUS_CHANGE,
+          performedById: req.user.id,
+          oldValue: { status: 'OPEN' },
+          newValue: { status: 'RESOLVED', resolutionRemarks: `Auto-resolved via approved evidence "${existing.title}"` },
+        });
+      } catch (auditErr) {
+        console.warn('[AuditLog] Notice: Audit logging for violation auto-resolve failed:', auditErr.message);
+      }
     }
 
     try {
-      await createAuditLog({
+      await createComplianceAuditLog({
         companyId: req.user.companyId,
-        entityType: 'ComplianceEvidence',
-        entityId: id,
+        
+        evidenceId: id,
         action: AUDIT_ACTIONS.STATUS_CHANGE,
         performedById: req.user.id,
         oldValue: { status: existing.status },
@@ -248,7 +261,7 @@ export async function uploadEvidenceFile(req, res, next) {
       attachment = await prisma.attachment.create({
         data: {
           companyId: req.user.companyId,
-          entityType: 'ComplianceEvidence',
+          
           entityId: evidence.id,
           fileName: file.originalname,
           fileType: file.mimetype,
@@ -270,10 +283,10 @@ export async function uploadEvidenceFile(req, res, next) {
       },
     });
 
-    await createAuditLog({
+    await createComplianceAuditLog({
       companyId: req.user.companyId,
-      entityType: 'ComplianceEvidence',
-      entityId: id,
+      
+      evidenceId: id,
       action: AUDIT_ACTIONS.UPDATE,
       performedById: req.user.id,
       newValue: { fileUrl, originalName: file.originalname, sizeBytes: file.size },

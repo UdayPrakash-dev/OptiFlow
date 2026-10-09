@@ -11,7 +11,7 @@ import {
 } from "../utils/errors.js";
 import { validateRequired, validateEnum } from "../utils/validation.js";
 import { ROLES, normalizeRole } from "../utils/roles.js";
-import { createAuditLog, AUDIT_ACTIONS } from "../utils/audit.js";
+import { createComplianceAuditLog, AUDIT_ACTIONS } from "../utils/audit.js";
 
 const ALLOWED_MIME_TYPES = [
   "application/pdf",
@@ -160,10 +160,10 @@ export async function createComplianceViolation(req, res, next) {
     });
 
     try {
-      await createAuditLog({
+      await createComplianceAuditLog({
         companyId: req.user.companyId,
-        entityType: "ComplianceViolation",
-        entityId: newViolation.id,
+        
+        violationId: newViolation.id,
         action: AUDIT_ACTIONS.CREATE,
         performedById: req.user.id,
         newValue: { ruleId, entityType, entityId, severity },
@@ -226,10 +226,10 @@ export async function updateComplianceViolation(req, res, next) {
     });
 
     try {
-      await createAuditLog({
+      await createComplianceAuditLog({
         companyId: req.user.companyId,
-        entityType: "ComplianceViolation",
-        entityId: id,
+        
+        violationId: id,
         action: AUDIT_ACTIONS.STATUS_CHANGE,
         performedById: req.user.id,
         oldValue: { status: existing.status },

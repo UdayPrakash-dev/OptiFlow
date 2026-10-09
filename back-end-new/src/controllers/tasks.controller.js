@@ -12,7 +12,8 @@ import {
   assertBranchManagerScope,
   isBranchManager,
 } from '../utils/tenantScope.js';
-import { createAuditLog, AUDIT_ACTIONS } from '../utils/audit.js';
+import { createSystemAuditLog, createProcessAuditLog, createComplianceAuditLog, AUDIT_ACTIONS } from '../utils/audit.js';
+import { evaluateTaskTransition } from '../services/compliance.service.js';
 
 
 const ALLOWED_TASK_STATUSES = ['Draft', 'Active', 'In_Review', 'Blocked', 'Completed', 'Cancelled'];
@@ -222,10 +223,8 @@ export async function createTask(req, res, next) {
 
     // Record audit log
     try {
-      await createAuditLog({
-        companyId: req.user.companyId,
-        entityType: 'Task',
-        entityId: newTask.id,
+      await createProcessAuditLog({companyId: req.user.companyId,
+        taskId: newTask.id,
         action: AUDIT_ACTIONS.CREATE,
         performedById: req.user.id,
         newValue: { title: newTask.title, status: newTask.status, priority: newTask.priority },
@@ -304,6 +303,53 @@ export async function updateTask(req, res, next) {
       updateData.actualHours = Number(hours);
     }
 
+    // 🔴 THE INTERCEPTOR: Evaluate Compliance Before Saving
+    if (updateData.status && updateData.status !== existing.status) {
+      const evaluation = await evaluateTaskTransition(id, existing.projectId, updateData);
+
+      if (!evaluation.allowed) {
+        // 1. Auto-generate Violations in the Database
+        const violationObjects = [];
+        for (const rule of evaluation.failedRules) {
+          // Create violation if one doesn't exist for this specific entity and rule
+          // In a real app we might want to check if an open violation already exists
+          const existingViolation = await prisma.complianceViolation.findFirst({
+            where: {
+              ruleId: rule.id,
+              entityType: 'Task',
+              entityId: id,
+              status: 'Open'
+            }
+          });
+
+          if (!existingViolation) {
+            const v = await prisma.complianceViolation.create({
+              data: {
+                companyId: req.user.companyId,
+                ruleId: rule.id,
+                entityType: 'Task',
+                entityId: id,
+                status: 'Open',
+                severity: rule.severity || 'Medium'
+              }
+            });
+            violationObjects.push(v);
+          } else {
+            violationObjects.push(existingViolation);
+          }
+        }
+
+        // 2. Block the transition and return 403 Forbidden to the Frontend
+        return res.status(403).json({
+          success: false,
+          error: "COMPLIANCE_BLOCK",
+          message: "This transition is blocked by active compliance rules.",
+          violations: evaluation.failedRules
+        });
+      }
+    }
+
+    // 🟢 IF ALLOWED: Proceed with normal Prisma update
     const updated = await prisma.task.update({
       where: { id },
       data: updateData,
@@ -315,10 +361,8 @@ export async function updateTask(req, res, next) {
 
     // Record audit log
     try {
-      await createAuditLog({
-        companyId: req.user.companyId,
-        entityType: 'Task',
-        entityId: id,
+      await createProcessAuditLog({companyId: req.user.companyId,
+        taskId: id,
         action: body.status && body.status !== existing.status ? AUDIT_ACTIONS.STATUS_CHANGE : AUDIT_ACTIONS.UPDATE,
         performedById: req.user.id,
         oldValue: { status: existing.status, title: existing.title },
@@ -369,10 +413,8 @@ export async function deleteTask(req, res, next) {
 
     // Record audit log
     try {
-      await createAuditLog({
-        companyId: req.user.companyId,
-        entityType: 'Task',
-        entityId: id,
+      await createProcessAuditLog({companyId: req.user.companyId,
+        taskId: id,
         action: AUDIT_ACTIONS.DELETE,
         performedById: req.user.id,
         oldValue: { title: existing.title },

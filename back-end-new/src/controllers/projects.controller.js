@@ -11,7 +11,7 @@ import {
   assertBranchManagerScope,
   isBranchManager,
 } from '../utils/tenantScope.js';
-import { createAuditLog, AUDIT_ACTIONS } from '../utils/audit.js';
+import { createSystemAuditLog, createProcessAuditLog, createComplianceAuditLog, AUDIT_ACTIONS } from '../utils/audit.js';
 
 
 /**
@@ -163,10 +163,8 @@ export async function createProject(req, res, next) {
 
     // Record audit log
     try {
-      await createAuditLog({
-        companyId: req.user.companyId,
-        entityType: 'Project',
-        entityId: newProject.id,
+      await createProcessAuditLog({companyId: req.user.companyId,
+        projectId: newProject.id,
         action: AUDIT_ACTIONS.CREATE,
         performedById: req.user.id,
         newValue: { name: newProject.name, teamId: newProject.teamId },
@@ -252,10 +250,8 @@ export async function updateProject(req, res, next) {
 
     // Record audit log
     try {
-      await createAuditLog({
-        companyId: req.user.companyId,
-        entityType: 'Project',
-        entityId: id,
+      await createProcessAuditLog({companyId: req.user.companyId,
+        projectId: id,
         action: AUDIT_ACTIONS.UPDATE,
         performedById: req.user.id,
         oldValue: { name: existing.name, status: existing.status },
@@ -302,10 +298,8 @@ export async function deleteProject(req, res, next) {
 
     // Record audit log
     try {
-      await createAuditLog({
-        companyId: req.user.companyId,
-        entityType: 'Project',
-        entityId: id,
+      await createProcessAuditLog({companyId: req.user.companyId,
+        projectId: id,
         action: AUDIT_ACTIONS.DELETE,
         performedById: req.user.id,
         oldValue: { name: existing.name },
