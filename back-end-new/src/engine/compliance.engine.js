@@ -20,6 +20,8 @@ const EVALUATORS = {
 
     if (scopeType === 'User') {
       whereClause.assignedToId = scopeId;
+    } else if (scopeType === 'Project') {
+      whereClause.projectId = scopeId;
     }
 
     const overdueTasks = await prisma.task.findMany({ where: whereClause, select: { id: true } });
@@ -57,6 +59,10 @@ const EVALUATORS = {
       status: { not: 'Completed' },
       assignedToId: null
     };
+
+    if (scopeType === 'Project') {
+      whereClause.projectId = scopeId;
+    }
 
     const unassignedTasks = await prisma.task.findMany({ where: whereClause, select: { id: true } });
     let newViolations = 0;

@@ -90,6 +90,7 @@ export async function createComplianceBinding(req, res, next) {
         ruleId: String(ruleId),
         scopeType,
         scopeId: String(scopeId),
+        companyId: req.user.companyId,
       },
       include: {
         rule: true,

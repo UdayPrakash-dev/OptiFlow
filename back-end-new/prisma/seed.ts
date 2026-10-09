@@ -380,6 +380,17 @@ async function main() {
 
   await prisma.complianceBinding.create({ data: { companyId: acmeCorp.id, ruleId: rule2FA.id, scopeType: ScopeType.Company, scopeId: acmeCorp.id } });
 
+  const ruleOverdue = await prisma.complianceRule.create({
+    data: {
+      companyId: acmeCorp.id,
+      name: "No Overdue Tasks Allowed",
+      description: "Any task past its due date will trigger a compliance violation.",
+      severity: Severity.Medium,
+      categoryId: categorySecurity.id,
+      isActive: true,
+    },
+  });
+
   const violation = await prisma.complianceViolation.create({
     data: {
       companyId: acmeCorp.id,
@@ -443,6 +454,7 @@ async function main() {
 
   const teamMembers = [userDavid, userEmma, userFrank, userGrace, userIan, userJulia, userKevin];
   const demoProjects = [projectQ3, projectMobile, projectSOC2, projectCRM];
+  await prisma.complianceBinding.create({ data: { companyId: acmeCorp.id, ruleId: ruleOverdue.id, scopeType: ScopeType.Project, scopeId: projectQ3.id } });
   const taskPriorities = [TaskPriority.Low, TaskPriority.Medium, TaskPriority.High, TaskPriority.Urgent];
   
   const createdTasks: any[] = [];

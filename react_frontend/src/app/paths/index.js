@@ -29,6 +29,7 @@ export const PATHS = {
   COMPLIANCE: {
     DASHBOARD: "/compliance/dashboard",
     RULES: "/compliance/rules",
+    RULE_DETAIL: "/compliance/rules/:id",
     CATEGORIES: "/compliance/categories",
     BINDINGS: "/compliance/bindings",
     VIOLATIONS: "/compliance/violations",

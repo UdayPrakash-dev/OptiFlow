@@ -82,6 +82,47 @@ export async function getComplianceRuleById(req, res, next) {
       throw new NotFoundError(`Compliance rule with ID ${id} not found`);
     }
 
+    // Hydration for Bindings and Violations - O(N) Single Pass Strategy
+    const allProjectIds = new Set();
+    const allUserIds = new Set();
+    const allTaskIds = new Set();
+
+    for (const b of rule.bindings) {
+      if (b.scopeType === 'Project') allProjectIds.add(b.scopeId);
+      if (b.scopeType === 'User') allUserIds.add(b.scopeId);
+    }
+
+    for (const v of rule.violations) {
+      if (v.entityType === 'Project') allProjectIds.add(v.entityId);
+      if (v.entityType === 'Task') allTaskIds.add(v.entityId);
+      if (v.entityType === 'User') allUserIds.add(v.entityId);
+    }
+
+    const [projects, users, tasks] = await Promise.all([
+      prisma.project.findMany({ where: { id: { in: Array.from(allProjectIds) } }, select: { id: true, name: true } }),
+      prisma.user.findMany({ where: { id: { in: Array.from(allUserIds) } }, select: { id: true, fullName: true, email: true } }),
+      prisma.task.findMany({ where: { id: { in: Array.from(allTaskIds) } }, select: { id: true, title: true } })
+    ]);
+
+    const projectMap = new Map(projects.map(p => [p.id, p.name]));
+    const userMap = new Map(users.map(u => [u.id, u.fullName || u.email]));
+    const taskMap = new Map(tasks.map(t => [t.id, t.title]));
+
+    rule.bindings = rule.bindings.map(b => {
+      let scopeName = "All (Company-wide)";
+      if (b.scopeType === 'Project') scopeName = projectMap.get(b.scopeId) || `Project #${b.scopeId.substring(0,8)}`;
+      if (b.scopeType === 'User') scopeName = userMap.get(b.scopeId) || `User #${b.scopeId.substring(0,8)}`;
+      return { ...b, scopeName };
+    });
+
+    rule.violations = rule.violations.map(v => {
+      let entityName = `${v.entityType} #${(v.entityId || "N/A").substring(0, 8)}`;
+      if (v.entityType === 'Project' && projectMap.has(v.entityId)) entityName = projectMap.get(v.entityId);
+      if (v.entityType === 'User' && userMap.has(v.entityId)) entityName = userMap.get(v.entityId);
+      if (v.entityType === 'Task' && taskMap.has(v.entityId)) entityName = taskMap.get(v.entityId);
+      return { ...v, entityName };
+    });
+
     res.status(200).json({
       success: true,
       data: rule,
