@@ -47,31 +47,31 @@ export const EmptyState = ({
 
     // Default: handcrafted document tray icon
     return (
-      <svg className="w-7 h-7 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <svg className="w-7 h-7 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
       </svg>
     );
   };
 
   return (
-    <div className={`flex flex-col items-center justify-center p-10 bg-slate-50/60 border border-dashed border-slate-200 rounded-2xl text-center transition-all ${className}`}>
+    <div className={`flex flex-col items-center justify-center p-12 bg-white rounded-lg border border-gray-200 shadow-sm text-center ${className}`}>
       {/* Handcrafted layered focal well */}
-      <div className="w-14 h-14 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-center mb-4 text-slate-400">
+      <div className="w-14 h-14 rounded-full bg-gray-50 border border-gray-100 flex items-center justify-center mb-4">
         {renderIcon()}
       </div>
 
-      <h3 className="text-base font-semibold text-slate-900">
+      <h3 className="text-[15px] font-semibold text-gray-900 mb-1">
         {displayTitle}
       </h3>
 
       {displayDesc && (
-        <p className="mt-1.5 text-sm text-slate-500 max-w-sm leading-relaxed">
+        <p className="text-sm text-gray-500 max-w-sm">
           {displayDesc}
         </p>
       )}
 
       {action && (
-        <div className="mt-5 flex items-center justify-center gap-3">
+        <div className="mt-5">
           {action}
         </div>
       )}

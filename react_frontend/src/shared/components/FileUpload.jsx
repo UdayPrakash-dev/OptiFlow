@@ -66,14 +66,14 @@ export const FileUpload = ({
   return (
     <div className={`w-full ${className}`}>
       {label && (
-        <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+        <label className="block text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">
           {label}
         </label>
       )}
 
       {selectedFile ? (
         // Selected File Preview Card
-        <div className="flex items-center justify-between p-3.5 bg-slate-50 border border-slate-200 rounded-xl transition-all">
+        <div className="flex items-center justify-between p-3.5 bg-gray-50 border border-gray-200 rounded-xl transition-all">
           <div className="flex items-center gap-3 min-w-0">
             <div className="w-9 h-9 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center flex-shrink-0">
               <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -81,10 +81,10 @@ export const FileUpload = ({
               </svg>
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-medium text-slate-900 truncate">
+              <p className="text-sm font-medium text-gray-900 truncate">
                 {selectedFile.name}
               </p>
-              <p className="text-xs text-slate-400">
+              <p className="text-xs text-gray-500">
                 {formatSize(selectedFile.size)}
               </p>
             </div>
@@ -93,7 +93,7 @@ export const FileUpload = ({
           <button
             type="button"
             onClick={handleRemove}
-            className="p-1.5 text-slate-400 hover:text-rose-500 rounded-lg transition-colors"
+            className="p-1.5 text-gray-400 hover:text-rose-500 rounded-lg transition-colors"
             title="Remove file"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -109,20 +109,20 @@ export const FileUpload = ({
           onDrop={handleDrop}
           className={`flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-xl cursor-pointer transition-all ${
             isDragOver
-              ? 'border-indigo-500 bg-indigo-50/50'
-              : 'border-slate-200 bg-slate-50/40 hover:bg-slate-50 hover:border-slate-300'
+              ? 'border-indigo-500 bg-indigo-50'
+              : 'border-gray-300 bg-gray-50 hover:bg-gray-100'
           }`}
         >
-          <div className="w-10 h-10 rounded-xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-center mb-3 text-slate-400 group-hover:text-indigo-500 transition-colors">
-            <svg className="w-5 h-5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="w-10 h-10 rounded-xl bg-white border border-gray-200 shadow-sm flex items-center justify-center mb-3 text-gray-400 group-hover:text-indigo-500 transition-colors">
+            <svg className="w-5 h-5 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
             </svg>
           </div>
 
-          <p className="text-sm font-medium text-slate-700 text-center">
+          <p className="text-sm font-medium text-gray-700 text-center">
             <span className="text-indigo-600 font-semibold hover:underline">Click to upload</span> or drag and drop
           </p>
-          <p className="text-xs text-slate-400 mt-1">
+          <p className="text-xs text-gray-500 mt-1">
             {hint || `Supported formats up to ${maxMB}MB`}
           </p>
 

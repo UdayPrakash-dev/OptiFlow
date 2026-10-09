@@ -395,20 +395,20 @@
 /* --- Typography & Buttons --- */
 h1,
 h2,
-h3 {
+.old-frontend-scope h3 {
   color: var(--primary-blue);
   margin-bottom: 1rem;
   font-size: 20px;
   font-family: "Plus Jakarta Sans", sans-serif;
   font-weight: 700;
 }
-h1 {
+.old-frontend-scope h1 {
   font-size: 40px;
   font-family: "Plus Jakarta Sans", sans-serif;
   font-weight: 700;
   line-height: 1.1;
 }
-h2 {
+.old-frontend-scope h2 {
   font-size: 2rem;
   font-family: "Plus Jakarta Sans", sans-serif;
   font-weight: 600;
@@ -538,7 +538,7 @@ h2 {
 }
 
 /* --- Sections Common --- */
-section {
+.old-frontend-scope section {
   margin: 0 auto;
 }
 /* --- Entire Section Wrapper --- */
@@ -946,7 +946,7 @@ section {
 }
 
 /* --- Footer Styling --- */
-footer {
+.old-frontend-scope footer {
   background: var(--primary-blue);
   color: white;
   padding: 4rem 5% 2rem;

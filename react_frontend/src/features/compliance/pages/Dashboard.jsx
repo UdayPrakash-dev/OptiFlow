@@ -154,15 +154,16 @@ export default function ComplianceDashboard() {
       header: "ACTION", 
       accessor: "action",
       render: (row) => (
-        <button 
+        <Button 
+          variant="secondary"
+          size="sm"
           onClick={() => {
             setSelectedViolation(row);
             setResolutionNotes("");
           }}
-          className="text-[13px] text-red-600 hover:text-red-800 font-semibold px-3 py-1.5 border border-red-200 rounded bg-red-50 hover:bg-red-100 transition-colors"
         >
-          Resolve ↓
-        </button>
+          Resolve
+        </Button>
       )
     }
   ];
@@ -171,7 +172,7 @@ export default function ComplianceDashboard() {
     <div className="p-8 max-w-7xl mx-auto bg-[#f0f4f8] min-h-screen text-[#1a2332]">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-[#1a2332] mb-1">Compliance Status</h1>
+          <h1 className="text-2xl font-semibold text-[#1a2332] mb-2">Compliance Status</h1>
         </div>
 
         <div className="mt-4 md:mt-0 flex flex-col items-end">

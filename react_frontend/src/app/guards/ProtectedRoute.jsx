@@ -14,8 +14,8 @@ export const ProtectedRoute = ({ allowedRoles = [], isPlatform = false }) => {
 
   // 1. Not logged in at all? Kick to login page.
   if (!user) {
-    // If it's a platform route, send to platform login, else standard login
-    return <Navigate to={isPlatform ? PATHS.PUBLIC.PLATFORM_LOGIN : PATHS.PUBLIC.LOGIN} replace />;
+    // Both standard and platform admins use the unified login page now
+    return <Navigate to={PATHS.PUBLIC.LOGIN} replace />;
   }
 
   // 2. Is this a platform route but the user is a standard tenant? Kick to login page

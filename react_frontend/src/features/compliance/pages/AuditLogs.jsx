@@ -87,7 +87,7 @@ export default function ComplianceAuditLogs() {
       <div className="flex items-center gap-3 mb-6">
         <ShieldCheck className="text-blue-600 w-8 h-8" />
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Compliance Audit Trail</h1>
+          <h1 className="text-2xl font-semibold">Compliance Audit Trail</h1>
           <p className="text-gray-500 text-sm mt-1">Immutable ledger of all compliance-related system changes.</p>
         </div>
       </div>

@@ -205,7 +205,7 @@ export default function ComplianceRules() {
     <div className="p-8 max-w-7xl mx-auto bg-[#f0f4f8] min-h-screen text-[#1a2332]">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-[#1a2332] mb-1">
+          <h1 className="text-2xl font-semibold text-[#1a2332] mb-1">
             Compliance Policies
           </h1>
           <p className="text-sm text-gray-500">

@@ -1,32 +1,32 @@
 // WHY: Badge visually communicates status, priority, or severity levels.
-// Simplified traditional flat design for better readability.
+// Clean, modern soft design (typical of top SaaS platforms like Stripe/Vercel).
 
 const THEMES = {
   // Status themes
-  active: "bg-green-100 text-green-800",
-  approved: "bg-green-100 text-green-800",
-  operational: "bg-green-100 text-green-800",
-  completed: "bg-green-100 text-green-800",
-  pending: "bg-yellow-100 text-yellow-800",
-  in_progress: "bg-yellow-100 text-yellow-800",
-  review: "bg-yellow-100 text-yellow-800",
-  failed: "bg-red-100 text-red-800",
-  blocked: "bg-red-100 text-red-800",
-  danger: "bg-red-100 text-red-800",
-  info: "bg-blue-100 text-blue-800",
-  draft: "bg-gray-100 text-gray-800",
+  active: "bg-emerald-50 text-emerald-700",
+  approved: "bg-emerald-50 text-emerald-700",
+  operational: "bg-emerald-50 text-emerald-700",
+  completed: "bg-emerald-50 text-emerald-700",
+  
+  pending: "bg-amber-50 text-amber-700",
+  in_progress: "bg-amber-50 text-amber-700",
+  review: "bg-amber-50 text-amber-700",
+  
+  failed: "bg-rose-50 text-rose-700",
+  blocked: "bg-rose-50 text-rose-700",
+  danger: "bg-rose-50 text-rose-700",
+  critical: "bg-rose-50 text-rose-700",
+  urgent: "bg-rose-50 text-rose-700",
 
-  // Priority themes
-  low: "bg-gray-100 text-gray-800",
-  medium: "bg-yellow-100 text-yellow-800",
-  high: "bg-orange-100 text-orange-800",
-  urgent: "bg-red-100 text-red-800",
-
-  // Severity themes
-  critical: "bg-red-100 text-red-800",
+  info: "bg-blue-50 text-blue-700",
+  
+  draft: "bg-slate-100 text-slate-700",
+  low: "bg-slate-100 text-slate-700",
+  medium: "bg-amber-50 text-amber-700",
+  high: "bg-rose-50 text-rose-700",
 
   // Default fallback
-  default: "bg-gray-100 text-gray-800",
+  default: "bg-slate-100 text-slate-700",
 };
 
 export const Badge = ({
@@ -49,8 +49,6 @@ export const Badge = ({
     success: 'active',
     neutral: 'default',
     warning: 'pending',
-    danger: 'critical',
-    info: 'info'
   };
   
   const mappedKey = themeMap[statusKey] || statusKey;
@@ -58,7 +56,7 @@ export const Badge = ({
   
   return (
     <span
-      className={`inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium ${baseClasses} ${className}`}
+      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[13px] font-medium tracking-tight ${baseClasses} ${className}`}
       {...props}
     >
       {content}

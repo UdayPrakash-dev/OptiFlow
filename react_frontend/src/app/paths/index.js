@@ -5,7 +5,6 @@ export const PATHS = {
     LOGIN: "/login",
     FORGOT_PASSWORD: "/forgot-password",
     REGISTER: "/register",
-    PLATFORM_LOGIN: "/platform/login",
   },
   COMMON: {
     NOTIFICATIONS: "/notifications",

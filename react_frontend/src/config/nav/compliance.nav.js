@@ -2,7 +2,7 @@ import { PATHS } from '../../app/paths';
 
 // rules, categories, bindings, track violations, and audit evidence.
 export const complianceNav = [
-    { label: 'Compliance Dashboard', path: PATHS.COMPLIANCE.DASHBOARD, icon: 'ShieldAlert' },
+    { label: 'Dashboard', path: PATHS.COMPLIANCE.DASHBOARD, icon: 'LayoutDashboard' },
     { label: 'Rules', path: PATHS.COMPLIANCE.RULES, icon: 'BookOpen' },
     { label: 'Categories', path: PATHS.COMPLIANCE.CATEGORIES, icon: 'Tags' },
     { label: 'Scope Bindings', path: PATHS.COMPLIANCE.BINDINGS, icon: 'Link2' },

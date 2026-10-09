@@ -2,7 +2,7 @@ import React from 'react';
 import styles from './StatCard.module.css';
 import { Loader } from './Loader'; // Assuming a Loader component exists or I can use a simple skeleton.
 
-export const StatCard = ({ label, value, trend, trendDirection, hint, icon, loading = false }) => {
+export const StatCard = ({ label, title, value, trend, trendDirection, hint, icon, loading = false }) => {
   if (loading) {
     return (
       <div className={styles.card}>
@@ -19,10 +19,12 @@ export const StatCard = ({ label, value, trend, trendDirection, hint, icon, load
   const trendColor = trendDirection === 'up' ? 'text-emerald-500' : 
                      trendDirection === 'down' ? 'text-rose-500' : 'text-slate-500';
 
+  const displayTitle = title || label;
+
   return (
     <div className={styles.card}>
       <div className={styles.header}>
-        <div className={styles.title}>{label}</div>
+        <div className={styles.title}>{displayTitle}</div>
         {icon && <div className={styles.iconWrapper}>{icon}</div>}
       </div>
       <div className={styles.body}>

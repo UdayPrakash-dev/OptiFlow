@@ -90,7 +90,7 @@ export default function ComplianceEvidence() {
       <div className="flex items-center gap-3 mb-6">
         <ShieldAlert className="text-blue-600 w-8 h-8" />
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Evidence Review Queue</h1>
+          <h1 className="text-2xl font-semibold">Evidence Review Queue</h1>
           <p className="text-gray-500 text-sm mt-1">Review submitted documents for compliance violations.</p>
         </div>
       </div>
