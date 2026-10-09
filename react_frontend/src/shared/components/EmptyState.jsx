@@ -54,18 +54,18 @@ export const EmptyState = ({
   };
 
   return (
-    <div className={`flex flex-col items-center justify-center p-10 bg-slate-50/60 dark:bg-slate-900/30 border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl text-center transition-all ${className}`}>
+    <div className={`flex flex-col items-center justify-center p-10 bg-slate-50/60 border border-dashed border-slate-200 rounded-2xl text-center transition-all ${className}`}>
       {/* Handcrafted layered focal well */}
-      <div className="w-14 h-14 rounded-2xl bg-white dark:bg-slate-800 border border-slate-200/80 dark:border-slate-700/80 shadow-xs flex items-center justify-center mb-4 text-slate-400">
+      <div className="w-14 h-14 rounded-2xl bg-white border border-slate-200/80 shadow-xs flex items-center justify-center mb-4 text-slate-400">
         {renderIcon()}
       </div>
 
-      <h3 className="text-base font-semibold text-slate-900 dark:text-white">
+      <h3 className="text-base font-semibold text-slate-900">
         {displayTitle}
       </h3>
 
       {displayDesc && (
-        <p className="mt-1.5 text-sm text-slate-500 dark:text-slate-400 max-w-sm leading-relaxed">
+        <p className="mt-1.5 text-sm text-slate-500 max-w-sm leading-relaxed">
           {displayDesc}
         </p>
       )}

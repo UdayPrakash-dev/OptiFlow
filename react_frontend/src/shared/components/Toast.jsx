@@ -8,55 +8,57 @@ const ToastContext = createContext(null);
 
 const ICONS = {
   success: (
-    <svg className="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+    <svg className="w-5 h-5 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
     </svg>
   ),
   error: (
-    <svg className="w-4 h-4 text-rose-600 dark:text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+    <svg className="w-5 h-5 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
     </svg>
   ),
   warning: (
-    <svg className="w-4 h-4 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg className="w-5 h-5 text-yellow-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
     </svg>
   ),
   info: (
-    <svg className="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+    <svg className="w-5 h-5 text-blue-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
     </svg>
   ),
 };
 
-const ICON_BG = {
-  success: 'bg-emerald-50 dark:bg-emerald-950/50 ring-1 ring-emerald-500/20',
-  error: 'bg-rose-50 dark:bg-rose-950/50 ring-1 ring-rose-500/20',
-  warning: 'bg-amber-50 dark:bg-amber-950/50 ring-1 ring-amber-500/20',
-  info: 'bg-blue-50 dark:bg-blue-950/50 ring-1 ring-blue-500/20',
+const TOAST_STYLES = {
+  success: 'bg-green-50 border-green-200 text-green-800',
+  error: 'bg-red-50 border-red-200 text-red-800',
+  warning: 'bg-yellow-50 border-yellow-200 text-yellow-800',
+  info: 'bg-blue-50 border-blue-200 text-blue-800',
 };
 
-// Standalone Toast Card (used both inside Provider and standalone for backwards compatibility)
+// Standalone Toast Card
 export const Toast = ({ message, type = 'info', onClose, className = '' }) => {
+  const style = TOAST_STYLES[type] || TOAST_STYLES.info;
+  const icon = ICONS[type] || ICONS.info;
+
   return (
     <div
       role="alert"
-      className={`pointer-events-auto flex items-start gap-3 w-full max-w-sm p-3.5 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-xl border border-slate-200/80 dark:border-slate-800 shadow-lg shadow-slate-900/5 transition-all animate-in fade-in slide-in-from-top-2 duration-200 ${className}`}
+      className={`pointer-events-auto flex items-start gap-3 w-full max-w-sm p-4 rounded-xl border shadow-md transition-all ${style} ${className}`}
     >
-      <div className={`flex-shrink-0 w-7 h-7 rounded-lg flex items-center justify-center ${ICON_BG[type] || ICON_BG.info}`}>
-        {ICONS[type] || ICONS.info}
+      <div className="flex-shrink-0 mt-0.5">
+        {icon}
       </div>
-      <p className="flex-1 text-xs sm:text-sm font-medium text-slate-800 dark:text-slate-100 leading-snug pt-0.5">
+      <p className="flex-1 text-sm font-medium leading-snug">
         {message}
       </p>
       {onClose && (
         <button
           onClick={onClose}
           type="button"
-          aria-label="Dismiss toast"
-          className="flex-shrink-0 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 rounded-md transition-colors"
+          className="flex-shrink-0 p-1 opacity-70 hover:opacity-100 transition-opacity rounded-md"
         >
-          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
         </button>
